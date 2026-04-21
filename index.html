@@ -728,16 +728,15 @@
             : `${API_URL}/excel/actuals/dashboard`;
 
         try {
-          const res = await fetch(endpoint, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
+          const res = await fetch(endpoint);
 
+          // Authorization bypass for serverless mode
+          /*
           if (res.status === 401) {
             handleUnauthorized?.("Unauthorized");
             return;
           }
+          */
           if (!res.ok) throw new Error("Fetch failed");
 
           const dbExcel = await res.json();

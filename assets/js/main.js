@@ -15,122 +15,21 @@
   // }
 
   async function authFetch(url, options = {}) {
-    let token = localStorage.getItem("token");
-    // console.log("TOKEN ON FE : " + token);
-
-    const fetchWithToken = async () => {
-      const res = await fetch(url, {
-        ...options,
-        credentials: "include",
-        headers: {
-          ...options.headers,
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
-      return res;
-    };
-
-    let res = await fetchWithToken();
-
-    // Handle 401 errors
-    if (res.status === 401) {
-      const data = await res.json().catch(() => ({}));
-
-      // Session invalid → show SweetAlert and redirect
-      if (data.error === "Session invalidated. Please login again.") {
-        await Swal.fire({
-          icon: "warning",
-          title: "Session Expired",
-          text: "Your session has expired or been invalidated. Redirecting to login...",
-          timer: 3000,
-          timerProgressBar: true,
-          showConfirmButton: false,
-        });
-
-        logout();
-        return;
-      }
-
-      // Access token expired → try refresh
-      if (data.error === "Access token expired") {
-        try {
-          const refreshRes = await fetch(`${API_URL}/refresh`, {
-            method: "POST",
-            credentials: "include",
-          });
-          if (refreshRes.ok) {
-            const refreshData = await refreshRes.json();
-            token = refreshData.accessToken;
-            localStorage.setItem("token", token);
-
-            // Retry the original request with new token
-            res = await fetchWithToken();
-          } else {
-            await Swal.fire({
-              icon: "warning",
-              title: "Session Expired",
-              text: "Redirecting to login...",
-              timer: 3000,
-              timerProgressBar: true,
-              showConfirmButton: false,
-            });
-            logout();
-            return;
-          }
-        } catch (err) {
-          console.error("Refresh failed", err);
-          await Swal.fire({
-            icon: "warning",
-            title: "Session Expired",
-            text: "Redirecting to login...",
-            timer: 3000,
-            timerProgressBar: true,
-            showConfirmButton: false,
-          });
-          logout();
-          return;
-        }
-      }
-    }
-
+    // Backend-less version: just a regular fetch
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        "Content-Type": "application/json",
+      },
+    });
     return res;
   }
 
   async function sessionCheck() {
-    // const token = localStorage.getItem("token");
-    // alert(token);
-    try {
-      //  alert("abc");
-      const res = await authFetch(`${API_URL}/auth/refresh1`, {
-        method: "POST",
-        credentials: "include",
-      });
-      //  alert("def");
-      if (!res || res.status === 401) {
-        console.log("session not valid");
-        //  alert("session not valid");
-        await Swal.fire({
-          icon: "warning",
-          title: "Session Expired",
-          text: "Your session has expired or been invalidated. Redirecting to login...",
-          timer: 3000,
-          timerProgressBar: true,
-          showConfirmButton: false,
-        });
-
-        logout();
-        return;
-      }
-      console.log("session valid");
-      // alert("session valid");
-      return true;
-    } catch (err) {
-      console.error("Error verifying session:", err);
-      // alert("Error verifying session:", err);
-      window.location.href = "login.html";
-      return false;
-    }
+    // Backend-less version: always valid
+    console.log("session valid (serverless mode)");
+    return true;
   }
 
   window.sessionCheck = sessionCheck;
@@ -141,21 +40,12 @@
   //   window.location.href = "login.html";
   // }
   async function logout() {
-    try {
-      // Call backend logout so refresh cookie is cleared
-      await authFetch(`${API_URL}/auth/logout`, {
-        method: "POST",
-        credentials: "include", // IMPORTANT so cookie is sent
-      });
-    } catch (err) {
-      console.error("Logout failed:", err);
-    }
-
+    console.log("Logout triggered (serverless mode)");
     // Clear local token too
     localStorage.removeItem("token");
-
-    // Redirect
-    window.location.href = "login.html";
+    // In serverless mode, we don't necessarily need to redirect to login.html
+    // but if the user wants to keep the flow:
+    console.log("Redirect to login.html suppressed (serverless mode)");
   }
   window.logout = logout;
 
@@ -449,7 +339,7 @@ document.querySelectorAll("table").forEach((tbl) => {
 //         roles: ["superadmin", "admin", "user", "customer"],
 //         branches: ["all", planingBranch, excelBranch],
 //         label: "YD MOM",
-//         href: "https://ydmom.ydagchmi.com/",
+//         href: "#",
 //         target: "_blank",
 //       },
 //       // {
@@ -847,7 +737,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         label: "YD MOM",
 
-        href: "https://ydmom.ydagchmi.com/",
+        href: "#",
 
         target: "_blank",
       },
@@ -970,17 +860,14 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function handleUnauthorized(message = "Please login again") {
-  Swal.fire("Session Expired", message, "error");
-  setTimeout(() => {
-    window.location.href = "./login.html";
-  }, 3000);
+  console.log("Unauthorized access blocked (serverless mode):", message);
 }
 
-let loginToken = localStorage.getItem("token");
+let loginToken = localStorage.getItem("token") || "mock-token";
 
 if (!loginToken) {
-  console.error("No token found");
-  window.location.href = "./login.html";
+  // console.error("No token found");
+  // window.location.href = "./login.html";
 }
 
 function getUserIdFromToken(loginToken) {
@@ -996,8 +883,11 @@ function getUserIdFromToken(loginToken) {
 const USER_ID = getUserIdFromToken(loginToken);
 
 // const socket = io("http://localhost:5000");
-const socket = io(`${API_URL}`);
-socket.emit("join", USER_ID);
+const socket = {
+    on: () => {},
+    emit: () => {}
+};
+// socket.emit("join", USER_ID);
 
 let notifications = [];
 

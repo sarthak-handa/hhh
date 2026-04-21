@@ -1,8 +1,16 @@
 {
   "rewrites": [
     {
+      "source": "/api/excel/forecast/dashboard",
+      "destination": "/api/forecast"
+    },
+    {
+      "source": "/api/excel/actuals/dashboard",
+      "destination": "/api/actuals"
+    },
+    {
       "source": "/api/(.*)",
-      "destination": "https://ydprojects.ydagchmi.com/api/$1"
+      "destination": "/api/$1"
     }
   ],
   "redirects": [
