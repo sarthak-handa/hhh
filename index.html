@@ -1090,8 +1090,10 @@
 
             acc[item.name].totalVal += item.val || 0;
 
-            // 🔴 CRITICAL FIX: Always push item, even if assembly is empty (common for BOI)
-            acc[item.name].items.push(item);
+            // Only push to items array if there is a valid assembly name
+            if (item.assembly && item.assembly.toString().trim() !== "" && item.assembly !== "—") {
+              acc[item.name].items.push(item);
+            }
 
             return acc;
           }, {}),
