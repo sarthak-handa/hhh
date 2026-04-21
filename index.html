@@ -851,11 +851,10 @@
           },
         });
 
-        // 2. PIE CHART — Custom Connector Line Plugin
+        // 2. PIE CHART — Custom Connector Line Plugin (with anti-overlap)
         const pieOutlabelPlugin = {
           id: 'pieOutlabels',
           afterDraw(chart) {
-            // Only draw for forecast context doughnut
             if (chart.config.type !== 'doughnut') return;
             const { ctx, chartArea } = chart;
             const meta = chart.getDatasetMeta(0);
@@ -863,63 +862,100 @@
 
             const centerX = (chartArea.left + chartArea.right) / 2;
             const centerY = (chartArea.top + chartArea.bottom) / 2;
+            const LABEL_HEIGHT = 22; // Min vertical space between labels
 
+            // --- PASS 1: Compute raw positions for all slices ---
+            const items = [];
             meta.data.forEach((arc, i) => {
               const data = chart.data.datasets[0].data[i];
               if (!data || data === 0) return;
               const label = chart.data.labels[i] || '';
               const valCr = (data / 10000000).toFixed(2);
-
-              // Get midpoint angle of the arc
-              const startAngle = arc.startAngle;
-              const endAngle = arc.endAngle;
-              const midAngle = (startAngle + endAngle) / 2;
-
-              // Point on the outer edge of the arc
+              const midAngle = (arc.startAngle + arc.endAngle) / 2;
               const outerRadius = arc.outerRadius;
               const edgeX = centerX + Math.cos(midAngle) * outerRadius;
               const edgeY = centerY + Math.sin(midAngle) * outerRadius;
+              const isRight = Math.cos(midAngle) >= 0;
 
-              // Elbow point (further out)
-              const elbowLen = 18;
-              const elbowX = centerX + Math.cos(midAngle) * (outerRadius + elbowLen);
-              const elbowY = centerY + Math.sin(midAngle) * (outerRadius + elbowLen);
+              items.push({
+                label, valCr, midAngle, edgeX, edgeY, isRight,
+                targetY: edgeY, // will be adjusted
+                outerRadius,
+              });
+            });
 
-              // Horizontal line direction
-              const isRight = elbowX >= centerX;
-              const lineLen = 25;
-              const endX = isRight ? elbowX + lineLen : elbowX - lineLen;
-              const endY = elbowY;
+            // --- PASS 2: Resolve overlaps per side ---
+            const leftItems = items.filter(d => !d.isRight).sort((a, b) => a.targetY - b.targetY);
+            const rightItems = items.filter(d => d.isRight).sort((a, b) => a.targetY - b.targetY);
 
-              // Draw the connector line
+            function resolveOverlaps(group) {
+              for (let i = 1; i < group.length; i++) {
+                const prev = group[i - 1];
+                const curr = group[i];
+                if (curr.targetY - prev.targetY < LABEL_HEIGHT) {
+                  curr.targetY = prev.targetY + LABEL_HEIGHT;
+                }
+              }
+              // If labels overflow bottom, push everything up
+              const maxY = chartArea.bottom - 10;
+              if (group.length > 0 && group[group.length - 1].targetY > maxY) {
+                const overflow = group[group.length - 1].targetY - maxY;
+                group.forEach(g => g.targetY -= overflow);
+              }
+              // Ensure nothing goes above top
+              const minY = chartArea.top + 10;
+              for (let i = 0; i < group.length; i++) {
+                if (group[i].targetY < minY) group[i].targetY = minY + i * LABEL_HEIGHT;
+              }
+            }
+
+            resolveOverlaps(leftItems);
+            resolveOverlaps(rightItems);
+
+            // --- PASS 3: Draw connector lines and labels ---
+            const rightEdgeX = chartArea.right - 10;
+            const leftEdgeX = chartArea.left + 10;
+
+            items.forEach((item) => {
+              const { label, valCr, edgeX, edgeY, isRight, targetY } = item;
+
+              // Elbow: go out from arc edge
+              const elbowLen = 14;
+              const elbowX = edgeX + (isRight ? elbowLen : -elbowLen);
+              const elbowY = targetY;
+
+              // Horizontal tail
+              const endX = isRight ? rightEdgeX - 70 : leftEdgeX + 70;
+
               ctx.save();
+              // Connector line: arc-edge → elbow → horizontal
               ctx.beginPath();
               ctx.moveTo(edgeX, edgeY);
               ctx.lineTo(elbowX, elbowY);
-              ctx.lineTo(endX, endY);
-              ctx.strokeStyle = '#999';
+              ctx.lineTo(endX, elbowY);
+              ctx.strokeStyle = '#bbb';
               ctx.lineWidth = 1;
               ctx.stroke();
 
-              // Draw dot at edge
+              // Dot at arc edge
               ctx.beginPath();
-              ctx.arc(edgeX, edgeY, 2.5, 0, Math.PI * 2);
-              ctx.fillStyle = '#666';
+              ctx.arc(edgeX, edgeY, 2, 0, Math.PI * 2);
+              ctx.fillStyle = '#999';
               ctx.fill();
 
-              // Draw label text
+              // Label text
+              const textX = isRight ? endX + 4 : endX - 4;
+              ctx.textAlign = isRight ? 'left' : 'right';
+
               ctx.font = 'bold 10px Inter, sans-serif';
               ctx.fillStyle = '#333';
-              ctx.textAlign = isRight ? 'left' : 'right';
               ctx.textBaseline = 'bottom';
-              const textX = isRight ? endX + 4 : endX - 4;
-              ctx.fillText(label, textX, endY - 1);
+              ctx.fillText(label, textX, elbowY - 1);
 
-              // Draw value below
               ctx.font = '10px Inter, sans-serif';
-              ctx.fillStyle = '#666';
+              ctx.fillStyle = '#777';
               ctx.textBaseline = 'top';
-              ctx.fillText(valCr + ' Cr', textX, endY + 1);
+              ctx.fillText(valCr + ' Cr', textX, elbowY + 1);
 
               ctx.restore();
             });
