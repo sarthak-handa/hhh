@@ -3814,7 +3814,19 @@ body {
         },
       };
     </script>
-  <script>function toggleTheme() { document.documentElement.classList.toggle("dark"); const isDark = document.documentElement.classList.contains("dark"); localStorage.setItem("theme", isDark ? "dark" : "light"); } if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) { document.documentElement.classList.add("dark"); } else { document.documentElement.classList.remove("dark"); }</script></head>
+  <style id="theme-overrides">
+    body { background-color: #f8f9fa !important; color: #1f2937 !important; transition: background-color 0.3s, color 0.3s !important; }
+    .dark body { background-color: #020617 !important; color: #f1f5f9 !important; }
+    .glass-panel { background: rgba(255, 255, 255, 0.8) !important; border: 1px solid rgba(0, 0, 0, 0.1) !important; transition: background 0.3s, border 0.3s !important; }
+    .dark .glass-panel { background: rgba(15, 23, 42, 0.65) !important; border: 1px solid rgba(255, 255, 255, 0.05) !important; }
+    #loader { background-color: #ffffff !important; transition: background-color 0.3s !important; }
+    .dark #loader { background-color: #020617 !important; }
+    .custom-select { background-color: white !important; color: #1f2937 !important; }
+    .dark .custom-select { background-color: rgba(15, 23, 42, 0.8) !important; color: #f1f5f9 !important; }
+    .custom-select option { background-color: white !important; color: #1f2937 !important; }
+    .dark .custom-select option { background-color: #0f172a !important; color: #f1f5f9 !important; }
+  </style>
+  <script>function toggleTheme() { document.documentElement.classList.toggle("dark"); const isDark = document.documentElement.classList.contains("dark"); localStorage.setItem("theme", isDark ? "dark" : "light"); if (window.updateChartThemes) window.updateChartThemes(isDark); } if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) { document.documentElement.classList.add("dark"); } else { document.documentElement.classList.remove("dark"); }</script></head>
   <body class="bg-gray-50 text-gray-800 dark:bg-[#020617] dark:text-slate-100 font-sans antialiased transition-colors duration-300">
     <div id="loader" class="bg-gray-50 dark:bg-[#020617] transition-colors duration-300">
       <div class="cyber-loader"></div>
@@ -3822,7 +3834,7 @@ body {
 
     <header
       id="header"
-      class="header sticky-top bg-white border-b border-gray-200 dark:glass-panel dark:border-slate-700/50 shadow-sm transition-colors duration-300"
+      class="header sticky-top bg-white border-b border-gray-200 dark:glass-panel dark:border-gray-200 dark:border-gray-200 dark:border-slate-700/50 shadow-sm transition-colors duration-300"
       style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"
     >
       <nav class="navbar">
@@ -3835,7 +3847,7 @@ body {
             <!-- Navigation buttons removed for refined dashboard view -->
           </div>
 
-          <div class="right-icons-group flex items-center pr-3"><button onclick="toggleTheme()" class="p-2 ml-4 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-yellow-400 hover:scale-110 transition shadow-inner border border-gray-200 dark:border-slate-700"><i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:inline"></i></button></div></div></nav></header>
+          <div class="right-icons-group flex items-center pr-3"><button onclick="toggleTheme()" class="p-2 ml-4 rounded-full bg-gray-100 dark:bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-yellow-400 hover:scale-110 transition shadow-inner border border-gray-200 dark:border-gray-200 dark:border-slate-700"><i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:inline"></i></button></div></div></nav></header>
 
     <main class="px-4 sm:px-6 lg:px-8 py-6" style="margin: 0px">
       <div
@@ -3853,7 +3865,7 @@ body {
               id="excelUpdateTimeDiv"
               href="https://ydgrouppl.sharepoint.com/:x:/s/SalesForecast/IQAqwJw0nEVdSJiebL0rGJ4uAa6Rwn6fMdHM6r_g_PRJVuM?wdOrigin=TEAMS-MAGLEV.p2p_ns.rwc&wdExp=TEAMS-TREATMENT&wdhostclicktime=1769663415121&web=1"
               target="_blank"
-              class="text-slate-400 hover:text-sky-400 transition"
+              class="text-gray-500 dark:text-slate-400 hover:text-sky-400 transition"
               ><small id="excelUpdateTime"></small
             ></a>
             <a
@@ -3861,7 +3873,7 @@ body {
               style="display: none"
               href="https://ydgrouppl.sharepoint.com/:x:/s/SalesForecast/IQA8foYHguqjRJP0QhZ3HO-lAUwt2jC8tpiatYX1uld0gpk?wdOrigin=TEAMS-MAGLEV.p2p_ns.rwc&wdExp=TEAMS-TREATMENT&wdhostclicktime=1769664603609&web=1"
               target="_blank"
-              class="text-slate-400 hover:text-sky-400 transition"
+              class="text-gray-500 dark:text-slate-400 hover:text-sky-400 transition"
               ><small id="excelUpdateTime2"></small
             ></a>
           </div>
@@ -3878,7 +3890,7 @@ body {
             <button
               id="toggle-actuals"
               onclick="switchDataContext('actuals')"
-              class="px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800/50"
+              class="px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800 dark:text-gray-500 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-gray-100 dark:hover:bg-gray-100 dark:bg-slate-800/50"
             >
               REVENUE 25-26
             </button>
@@ -3890,13 +3902,13 @@ body {
         >
           <div class="flex flex-col" id="dispatch-status-container">
             <label
-              class="text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1"
+              class="text-[10px] font-bold text-gray-500 dark:text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1"
               >All Statuses</label
             >
             <select
               id="filter-status"
               onchange="applySlicer('status', this.value)"
-              class="custom-select bg-gray-50 border border-gray-200 text-gray-800 dark:border-slate-700 dark:bg-[rgba(15,23,42,0.8)] dark:text-slate-100 text-sm rounded-md focus:ring-yogi-red focus:border-yogi-red dark:focus:ring-sky-400 dark:focus:border-sky-400 block w-40 p-2"
+              class="custom-select bg-gray-50 border border-gray-200 text-gray-800 dark:border-gray-200 dark:border-slate-700 dark:bg-[rgba(15,23,42,0.8)] dark:text-slate-100 text-sm rounded-md focus:ring-yogi-red focus:border-yogi-red dark:focus:ring-sky-400 dark:focus:border-sky-400 block w-40 p-2"
             >
               <option value="all">All Statuses</option>
               <option value="BOI">BOI</option>
@@ -3908,26 +3920,26 @@ body {
 
           <div class="flex flex-col relative">
             <label
-              class="text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1"
+              class="text-[10px] font-bold text-gray-500 dark:text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1"
               >Dispatch Month</label
             >
             <button
               id="monthDropdownBtn"
               onclick="toggleMonthDropdown()"
-              class="bg-gray-50 border border-gray-200 text-gray-800 dark:border-slate-700 dark:bg-[rgba(15,23,42,0.8)] dark:text-slate-100 text-sm rounded-md focus:ring-yogi-red focus:border-yogi-red dark:focus:ring-sky-400 dark:focus:border-sky-400 block w-40 p-2 text-left flex justify-between items-center transition-colors"
+              class="bg-gray-50 border border-gray-200 text-gray-800 dark:border-gray-200 dark:border-slate-700 dark:bg-[rgba(15,23,42,0.8)] dark:text-slate-100 text-sm rounded-md focus:ring-yogi-red focus:border-yogi-red dark:focus:ring-sky-400 dark:focus:border-sky-400 block w-40 p-2 text-left flex justify-between items-center transition-colors"
             >
               <span id="monthBtnText">All Months</span>
-              <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
+              <i class="fa-solid fa-chevron-down text-xs text-gray-500 dark:text-slate-400"></i>
             </button>
             <div
               id="monthDropdownList"
-              class="hidden absolute top-[60px] z-50 w-48 bg-white dark:glass-panel shadow-lg border border-gray-200 dark:border-slate-700 rounded-md max-h-60 overflow-y-auto custom-scroll"
+              class="hidden absolute top-[60px] z-50 w-48 bg-white dark:glass-panel shadow-lg border border-gray-200 dark:border-gray-200 dark:border-slate-700 rounded-md max-h-60 overflow-y-auto custom-scroll"
             ></div>
           </div>
           <div class="flex items-end">
             <button
               onclick="resetAllFilters()"
-              class="bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-slate-800 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-600 dark:text-slate-300 px-4 py-2 rounded-md text-sm font-medium transition h-[38px] flex items-center gap-2"
+              class="bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-gray-200 dark:border-gray-300 dark:border-slate-600 dark:text-gray-700 dark:text-slate-300 px-4 py-2 rounded-md text-sm font-medium transition h-[38px] flex items-center gap-2"
             >
               <svg
                 class="w-4 h-4 text-yogi-red dark:text-sky-400"
@@ -3960,7 +3972,7 @@ body {
         <div
           class="kpi-card glass-panel p-5 rounded-lg border-l-4 border-sky-400"
         >
-          <p class="text-xs font-bold text-sky-400/80 uppercase tracking-widest">PROJECTS</p>
+          <p class="text-xs font-bold text-yogi-red dark:text-sky-400/80 uppercase tracking-widest">PROJECTS</p>
           <h3 id="kpi-projects" class="text-3xl font-bold text-slate-100 mt-2 tracking-tight">
             0
           </h3>
@@ -4001,11 +4013,11 @@ body {
 
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-6 mb-6 w-full">
         <div
-          class="glass-panel p-4 rounded-lg shadow-lg xl:col-span-4 border border-slate-700 min-w-0"
+          class="glass-panel p-4 rounded-lg shadow-lg xl:col-span-4 border border-gray-200 dark:border-slate-700 min-w-0"
           id="col-bar"
         >
           <div class="flex justify-between items-center mb-2">
-            <h3 class="text-sm font-bold text-slate-200 tracking-wider">
+            <h3 class="text-sm font-bold text-gray-800 dark:text-slate-200 tracking-wider">
               FORECASTED BILLING ALLOCATION
             </h3>
           </div>
@@ -4014,11 +4026,11 @@ body {
           </div>
         </div>
         <div
-          class="glass-panel p-4 rounded-lg shadow-lg xl:col-span-4 border border-slate-700 min-w-0"
+          class="glass-panel p-4 rounded-lg shadow-lg xl:col-span-4 border border-gray-200 dark:border-slate-700 min-w-0"
           id="col-pie"
         >
           <div class="flex justify-between items-center mb-2">
-            <h3 class="text-sm font-bold text-slate-200 tracking-wider">
+            <h3 class="text-sm font-bold text-gray-800 dark:text-slate-200 tracking-wider">
               FORECASTED BILLING BY PRODUCTION LINE
             </h3>
           </div>
@@ -4027,11 +4039,11 @@ body {
           </div>
         </div>
         <div
-          class="glass-panel p-4 rounded-lg shadow-lg md:col-span-2 xl:col-span-4 border border-slate-700 min-w-0"
+          class="glass-panel p-4 rounded-lg shadow-lg md:col-span-2 xl:col-span-4 border border-gray-200 dark:border-slate-700 min-w-0"
           id="col-line"
         >
           <div class="flex justify-between items-center mb-2">
-            <h3 class="text-sm font-bold text-slate-200 tracking-wider">
+            <h3 class="text-sm font-bold text-gray-800 dark:text-slate-200 tracking-wider">
               FORECASTED MONTHLY BILLING
             </h3>
           </div>
@@ -4042,10 +4054,10 @@ body {
       </div>
 
       <div
-        class="glass-panel rounded-lg shadow-lg border border-slate-700 overflow-hidden"
+        class="glass-panel rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 overflow-hidden"
       >
         <div
-          class="bg-slate-900/80 px-6 py-4 border-b border-slate-700 flex justify-between items-center"
+          class="bg-gray-50 dark:bg-slate-900/80 px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center"
         >
           <h3 class="font-bold text-slate-100 uppercase tracking-widest text-sm">Detailed Assemblies Value</h3>
           <span
@@ -4057,14 +4069,14 @@ body {
         <div class="overflow-x-auto custom-scroll">
           <table class="w-full text-sm text-left">
             <thead
-              class="bg-slate-800/80 text-xs uppercase text-slate-300 sticky top-0 z-10"
+              class="bg-gray-50 dark:bg-gray-100 dark:bg-slate-800/80 text-xs uppercase text-gray-700 dark:text-slate-300 sticky top-0 z-10"
             >
               <tr>
-                <th class="px-6 py-4 border-b border-slate-700 w-12"></th>
-                <th class="px-6 py-4 border-b border-slate-700">Project Name</th>
-                <th class="px-6 py-4 border-b border-slate-700">Manager</th>
+                <th class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 w-12"></th>
+                <th class="px-6 py-4 border-b border-gray-200 dark:border-slate-700">Project Name</th>
+                <th class="px-6 py-4 border-b border-gray-200 dark:border-slate-700">Manager</th>
                 <th
-                  class="px-6 py-4 border-b border-slate-700 text-right cursor-pointer select-none hover:text-sky-400 transition"
+                  class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 text-right cursor-pointer select-none hover:text-sky-400 transition"
                   onclick="toggleBillingSort()"
                 >
                   Billing (₹)
@@ -4934,8 +4946,8 @@ body {
 
           const tr = document.createElement("tr");
 
-          tr.className = `hover:bg-slate-800/50 transition group ${
-            isExpanded ? "bg-slate-800/80" : "bg-transparent"
+          tr.className = `hover:bg-gray-100 dark:hover:bg-gray-100 dark:hover:bg-gray-100 dark:bg-slate-800/50 transition group ${
+            isExpanded ? "bg-gray-50 dark:bg-gray-50 dark:bg-gray-100 dark:bg-slate-800/80" : "bg-transparent"
           }`;
 
           tr.innerHTML = `
@@ -4943,15 +4955,15 @@ body {
 <button onclick="toggleProjectExpansion('${rowId}')" class="w-6 h-6 flex items-center justify-center rounded border ${
             isExpanded
               ? "bg-sky-500 border-sky-500 text-slate-900 shadow-[0_0_10px_rgba(56,189,248,0.5)]"
-              : "border-slate-600 text-slate-400 hover:border-sky-400 hover:text-sky-400"
+              : "border-gray-300 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:border-sky-400 hover:text-sky-400"
           } transition">
 
           ${isExpanded ? "−" : "+"}
 </button>
 </td>
-<td class="px-6 py-4 font-bold text-slate-200 tracking-wide">${row.name}</td>
-<td class="px-6 py-4 text-slate-400">${row.pm}</td>
-<td class="px-6 py-4 text-right font-bold text-sky-400">₹${row.totalVal.toLocaleString(
+<td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-800 dark:text-slate-200 tracking-wide">${row.name}</td>
+<td class="px-6 py-4 text-gray-600 dark:text-gray-500 dark:text-slate-400">${row.pm}</td>
+<td class="px-6 py-4 text-right font-bold text-gray-900 dark:text-sky-400">₹${row.totalVal.toLocaleString(
             "en-IN",
           )}</td>
 
@@ -4962,7 +4974,7 @@ body {
           if (isExpanded) {
             const childTr = document.createElement("tr");
 
-            childTr.className = "bg-[#020617]/60";
+            childTr.className = "bg-gray-100 dark:bg-[#020617]/60 transition-colors";
 
             let headerHtml = "",
               itemsHtml = "";
@@ -5030,16 +5042,16 @@ body {
               // Modified Header with Sort Dropdown
 
               headerHtml = `
-<div class="grid grid-cols-3 items-end mb-2 border-b border-slate-700 pb-2 w-full">
+<div class="grid grid-cols-3 items-end mb-2 border-b border-gray-200 dark:border-gray-200 dark:border-slate-700 pb-2 w-full">
 <div class="text-left">
-<h4 class="text-xs font-bold text-sky-400/80 uppercase tracking-widest">Assembly Breakdown</h4>
+<h4 class="text-xs font-bold text-yogi-red dark:text-yogi-red dark:text-sky-400/80 uppercase tracking-widest">Assembly Breakdown</h4>
 </div>
 <div class="text-center">
-<h4 class="text-xs font-bold text-sky-400/80 uppercase tracking-widest">Dispatch Track</h4>
+<h4 class="text-xs font-bold text-yogi-red dark:text-yogi-red dark:text-sky-400/80 uppercase tracking-widest">Dispatch Track</h4>
 </div>
 <div class="flex justify-end items-center gap-2">
-<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sort By:</span>
-<select onchange="changeAssemblySort(this.value)" class="text-xs border border-slate-600 rounded bg-slate-800 text-slate-200 focus:ring-1 focus:ring-sky-400 focus:border-sky-400 p-1 cursor-pointer transition-colors" style="width:140px;">
+<span class="text-[10px] font-bold text-gray-500 dark:text-gray-500 dark:text-slate-400 uppercase tracking-widest">Sort By:</span>
+<select onchange="changeAssemblySort(this.value)" class="text-xs border border-gray-200 rounded bg-white text-gray-700 dark:border-gray-300 dark:border-slate-600 dark:bg-gray-100 dark:bg-slate-800 dark:text-gray-800 dark:text-slate-200 focus:ring-1 focus:ring-yogi-red dark:focus:ring-sky-400 focus:border-yogi-red dark:focus:border-sky-400 p-1 cursor-pointer transition-colors" style="width:140px;">
 <option value="default" ${
                 state.assemblySort === "default" ? "selected" : ""
               }>Default (Status > Date)</option>
@@ -5079,8 +5091,8 @@ body {
                       ? `<span class="success-badge">${i.monthDisplay || (i.month + '/' + (i.year || '').slice(-2))}</span>`
                       : `<span>${i.monthDisplay || (i.month + '/' + (i.year || '').slice(-2))}</span>`;
 
-                  return `<div class="grid grid-cols-3 items-center py-2 border-b border-slate-700/50 last:border-0 text-sm hover:bg-slate-800/50 transition-colors w-full gap-4">
-<span class="text-slate-300 pl-4 border-l-2 ${
+                  return `<div class="grid grid-cols-3 items-center py-2 border-b border-gray-200 dark:border-gray-200 dark:border-slate-700/50 last:border-0 text-sm hover:bg-gray-100 dark:hover:bg-gray-100 dark:bg-slate-800/50 transition-colors w-full gap-4">
+<span class="text-gray-700 dark:text-slate-300 pl-4 border-l-2 ${
                     i.status === "Dispatched"
                       ? "border-emerald-500"
                       : "border-slate-500"
@@ -5088,8 +5100,8 @@ body {
 
                 ${i.assembly || "—"}
 </span>
-<span class="text-slate-400 flex items-center justify-center text-center">${statusBadge}</span>
-<span class="text-right font-bold text-sky-300">₹${i.val.toLocaleString(
+<span class="text-gray-500 dark:text-slate-400 flex items-center justify-center text-center">${statusBadge}</span>
+<span class="text-right font-bold text-gray-900 dark:text-sky-300">₹${i.val.toLocaleString(
                     "en-IN",
                   )}</span></div>`;
                 })
@@ -5098,13 +5110,13 @@ body {
             } else {
               // Keep existing layout for 'actuals' context if necessary, or update similarly
 
-              headerHtml = `<h4 class="col-12 text-xs font-bold text-sky-400/80 uppercase mb-2 tracking-widest">Assembly Breakdown</h4>`;
+              headerHtml = `<h4 class="col-12 text-xs font-bold text-yogi-red dark:text-sky-400/80 uppercase mb-2 tracking-widest">Assembly Breakdown</h4>`;
 
               itemsHtml = sortedItems
 
                 .map(
                   (i) =>
-                    `<div class="row py-2 border-b border-slate-700/50 last:border-0 text-sm"><span class="col-12 text-slate-300 pl-4 border-l-2 border-slate-500">${
+                    `<div class="row py-2 border-b border-gray-200 dark:border-gray-200 dark:border-slate-700/50 last:border-0 text-sm"><span class="col-12 text-gray-700 dark:text-slate-300 pl-4 border-l-2 border-slate-500">${
                       i.assembly || "—"
                     }</span></div>`,
                 )
@@ -5113,9 +5125,9 @@ body {
             }
 
             if (sortedItems.length === 0)
-              itemsHtml = `<div class="p-3 text-center text-slate-500 text-xs italic">No detailed assemblies available</div>`;
+              itemsHtml = `<div class="p-3 text-center text-gray-400 dark:text-slate-500 text-xs italic">No detailed assemblies available</div>`;
 
-            childTr.innerHTML = `<td colspan="6" class="p-0"><div class="expand-row px-6 py-4 shadow-inner bg-slate-900 border-x border-b border-slate-700 mx-4 mb-4 rounded-b-lg"><div class="row mb-3"><button class="bg-rose-500 text-white px-3 py-1 rounded-md text-xs font-bold hover:bg-rose-600 transition shadow-[0_0_8px_rgba(244,63,94,0.5)]" onclick="generateProjectPDF('${rowId}')"><i class="fa-solid fa-file-pdf mr-2"></i> Download PDF Report</button></div>${headerHtml}${itemsHtml}</div></td>`;
+            childTr.innerHTML = `<td colspan="6" class="p-0"><div class="expand-row px-6 py-4 shadow-sm dark:shadow-inner bg-gray-50 dark:bg-slate-900 border-x border-b border-gray-200 dark:border-slate-700 mx-4 mb-4 rounded-b-lg"><div class="row mb-3"><button class="bg-rose-500 text-white px-3 py-1 rounded-md text-xs font-bold hover:bg-rose-600 transition shadow-[0_0_8px_rgba(244,63,94,0.5)]" onclick="generateProjectPDF('${rowId}')"><i class="fa-solid fa-file-pdf mr-2"></i> Download PDF Report</button></div>${headerHtml}${itemsHtml}</div></td>`;
 
             tbody.appendChild(childTr);
           }
@@ -5174,14 +5186,14 @@ body {
         months.forEach((m) => {
           const item = document.createElement("div");
           item.className =
-            "flex items-center px-4 py-2 bg-slate-800/80 hover:bg-slate-700 cursor-pointer transition-colors border-b border-slate-700/50 last:border-0";
+            "flex items-center px-4 py-2 bg-gray-50 dark:bg-gray-100 dark:bg-slate-800/80 hover:bg-slate-700 cursor-pointer transition-colors border-b border-gray-200 dark:border-gray-200 dark:border-slate-700/50 last:border-0";
           const checkbox = document.createElement("input");
           checkbox.type = "checkbox";
           checkbox.checked = state.filters.month.includes(m);
           checkbox.className =
-            "form-checkbox h-4 w-4 rounded border-slate-600 bg-slate-900 focus:ring-sky-400 text-sky-400 pointer-events-none";
+            "form-checkbox h-4 w-4 rounded border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-900 focus:ring-sky-400 text-sky-400 pointer-events-none";
           const span = document.createElement("span");
-          span.className = "ml-3 text-sm text-slate-200 select-none font-medium";
+          span.className = "ml-3 text-sm text-gray-800 dark:text-slate-200 select-none font-medium";
           span.innerText = m;
           item.appendChild(checkbox);
           item.appendChild(span);
