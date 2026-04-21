@@ -487,7 +487,7 @@
           // Uncomment below to see the actual keys if needed in DevTools
           // console.log("Excel row keys:", Object.keys(dbExcel.data[0]));
 
-          document.getElementById("fy").innerText = "FY " + dbExcel.fiscalYear;
+          // FY span removed per user request
 
           const formatDate = (iso) => {
             if (!iso) return "";
@@ -1522,7 +1522,7 @@
           ? "Detailed Forecast Assembly Overview"
           : "Detailed Actual Assembly Overview";
 
-        const fyText = document.getElementById("fy").innerText;
+        const fyText = isForecast ? "FY 2026-27" : "FY 2025-26";
 
         doc.setFontSize(15);
         doc.setTextColor(brandRed);
@@ -1619,8 +1619,8 @@
           ? "TOTAL FORECAST"
           : "TOTAL ACTUAL REVENUE";
 
-        // Get Financial Year from the UI element
-        const fyText = document.getElementById("fy").innerText; // e.g., "(FY 2025-26)"
+        // Added static text since FY span was removed
+        const fyText = isForecast ? "FY 2026-27" : "FY 2025-26";
 
         // Determine Date Range from Filters
         let dateRangeText = "Full Financial Year";
