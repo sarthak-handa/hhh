@@ -541,48 +541,14 @@
             const rawVal = String(item.billing || 0).replace(/[^0-9.-]/g, "");
             const val = parseFloat(rawVal) || 0;
 
-            // --- UPDATED LOGIC: Handle "Disp." and "Not Disp." from Col H ---
-            let status = "Not Dispatched";
-            if (item.status) {
-              const s = item.status.toLowerCase();
-              if (s.includes("not disp")) {
-                status = "Not Dispatched";
-              } else if (s.includes("disp")) {
-                status = "Dispatched";
-              } else if (s.includes("hold")) {
-                status = "Hold";
-              }
-            }
-
-            // --- UPDATED LOGIC: Map Column B (Robust Fuzzy Lookup) ---
-            // Handles concatenated strings or dirty data as requested
-            const rawLine = (
-              item.line ||
-              item.manufacturing ||
-              item.boi_manufacturing ||
-              item["BOI /MANUFACTURING"] ||
-              ""
-            )
-              .toString()
-              .replace(/\s+/g, "") // Remove spaces
-              .toUpperCase();
-
-            let source = "";
-            // Priority Check: As requested, use includes/regex
-            if (rawLine.includes("BOI")) {
-              source = "BOI";
-            } else if (/UNIT-?[123]/.test(rawLine)) {
-              source = "Inhouse";
-            }
-
             return {
               id: index + 1,
               name: item.project,
               pm: item.pm,
               product: item.category,
               month: item.month ? item.month.trim() : "",
-              status: status, // mapped status from Col H
-              source: source, // mapped source from Col B
+              status: item.status || "Not Dispatched",
+              source: item.source || "",       // Pre-mapped from Column B by API
               val: val,
               date: formatDate(item.dispatchMonth),
               context: state.context,
@@ -806,7 +772,10 @@
         const totalAssm = data.filter(
           (d) => d.assembly && d.assembly.trim() !== "",
         ).length;
-        const distMonthCount = new Set(data.map((d) => d.month)).size;
+
+        // Average monthly: divide by 12 if no months selected, else by selected month count
+        const selectedMonthCount = state.filters.month.length;
+        const divisor = selectedMonthCount > 0 ? selectedMonthCount : 12;
 
         document.getElementById("kpi-projects").innerText = totalProj;
         document.getElementById("kpi-revenue").innerText =
@@ -818,8 +787,7 @@
           " Cr";
         document.getElementById("kpi-assemblies").innerText = totalAssm;
 
-        const avg =
-          distMonthCount > 0 ? totalVal / 10000000 / distMonthCount : 0;
+        const avg = divisor > 0 ? totalVal / 10000000 / divisor : 0;
         document.getElementById("kpi-avg").innerText =
           "₹ " +
           avg.toLocaleString("en-IN", {

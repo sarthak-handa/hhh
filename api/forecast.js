@@ -50,25 +50,41 @@ function mapCategory(line) {
   return "OTHER";
 }
 
-function isInCurrentFiscalWindow(dispatchDate) {
-  if (!(dispatchDate instanceof Date) || isNaN(dispatchDate)) return false;
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-  const startOfCurrentMonth = new Date(currentYear, currentMonth, 1);
-
-  // Broaden window: Show data from 12 months ago up to end of next fiscal year
-  const dataStartDate = new Date(startOfCurrentMonth);
-  dataStartDate.setMonth(dataStartDate.getMonth() - 12);
-
-  let fiscalYearStart;
-  if (currentMonth <= 2) {
-    fiscalYearStart = currentYear - 1;
-  } else {
-    fiscalYearStart = currentYear;
+/**
+ * Convert Excel serial number to JS Date.
+ * Excel serial 1 = Jan 1, 1900. JS epoch = Jan 1, 1970.
+ */
+function excelSerialToDate(serial) {
+  if (!serial) return null;
+  // If it's already a string date, try parsing directly
+  if (typeof serial === "string") {
+    const d = new Date(serial);
+    return isNaN(d) ? null : d;
   }
-  const fiscalEndDate = new Date(fiscalYearStart + 2, 2, 31, 23, 59, 59); // Next year's end
-  return dispatchDate >= dataStartDate && dispatchDate <= fiscalEndDate;
+  if (typeof serial !== "number") return null;
+  // Excel serial to JS date (subtract Excel epoch offset)
+  return new Date((serial - 25569) * 86400000);
+}
+
+/**
+ * Check if a date falls within FY 2026-27 (April 2026 to March 2027).
+ */
+function isInFY2026_27(dispatchDate) {
+  if (!(dispatchDate instanceof Date) || isNaN(dispatchDate)) return false;
+  const fyStart = new Date(2026, 3, 1, 0, 0, 0);     // April 1, 2026
+  const fyEnd = new Date(2027, 2, 31, 23, 59, 59);    // March 31, 2027
+  return dispatchDate >= fyStart && dispatchDate <= fyEnd;
+}
+
+/**
+ * Map Column B (BOI/MANF.) to a source category.
+ */
+function mapSource(val) {
+  if (!val) return "";
+  const v = String(val).replace(/\s+/g, "").toUpperCase();
+  if (v.includes("BOI")) return "BOI";
+  if (/UNIT-?[123]/.test(v)) return "Inhouse";
+  return String(val).trim();
 }
 
 // --- MAIN HANDLER ---
@@ -93,25 +109,34 @@ module.exports = async (req, res) => {
     const data = headerSkipped
       .filter((r) => r[0] && r[0] !== "PROJECT")
       .map((r) => {
-        const dispatchDate = r[18] ? new Date(r[18]) : null;
-        const line = extractLine(r[0]);
+        // Column I (index 8) = DISP. MONTH (Excel serial number)
+        const dispatchDate = excelSerialToDate(r[8]);
+        // Column R (index 17) = CATEGORY
+        const category = r[17] ? String(r[17]).trim() : extractLine(r[0]);
+        // Column S (index 18) = DISPATCH MONTH NAME (human readable, e.g., "Apr 2027")
+        const monthName = r[18] ? String(r[18]).trim() : "";
+        // Extract just the short month (e.g., "Apr" from "Apr 2027")
+        const shortMonth = monthName ? monthName.split(" ")[0] : (dispatchDate ? dispatchDate.toLocaleString("en-US", { month: "short" }) : "");
+
         return {
-          project: String(r[0]).trim(),
-          pm: String(r[2] || "").trim(),
-          assembly: String(r[3] || "").trim(),
-          billing: Number(String(r[6] || 0).replace(/[^0-9.-]/g, "")) || 0,
-          status: normalizeStatus(r[7]),
-          dispatchMonth: dispatchDate,
-          month: dispatchDate ? dispatchDate.toLocaleString("en-US", { month: "short" }) : "",
-          line,
-          category: mapCategory(line),
+          project: String(r[0]).trim(),                        // Column A
+          source: mapSource(r[1]),                             // Column B (BOI/MANF.)
+          pm: String(r[2] || "").trim(),                       // Column C (PM)
+          assembly: String(r[3] || "").trim(),                 // Column D (ASSEMBLY)
+          billing: Number(String(r[6] || 0).replace(/[^0-9.-]/g, "")) || 0,  // Column G
+          status: normalizeStatus(r[7]),                       // Column H (DISP. STATUS)
+          dispatchMonth: dispatchDate,                         // Column I (date object)
+          month: shortMonth,                                   // Short month name
+          monthDisplay: monthName,                             // Full month display
+          line: extractLine(r[0]),
+          category: mapCategory(category),
         };
       })
-      .filter((d) => isInCurrentFiscalWindow(d.dispatchMonth));
+      .filter((d) => isInFY2026_27(d.dispatchMonth));
 
     res.status(200).json({
       source: "Vercel Serverless",
-      fiscalLogic: "Start of Previous Fiscal -> End of Next Fiscal",
+      fiscalYear: "2026-27",
       lastUpdated: metaRes.data.lastModifiedDateTime,
       count: data.length,
       data,
