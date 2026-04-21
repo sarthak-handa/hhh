@@ -3973,7 +3973,7 @@ body {
           class="kpi-card glass-panel p-5 rounded-lg border-l-4 border-sky-400"
         >
           <p class="text-xs font-bold text-yogi-red dark:text-sky-400/80 uppercase tracking-widest">PROJECTS</p>
-          <h3 id="kpi-projects" class="text-3xl font-bold text-slate-100 mt-2 tracking-tight">
+          <h3 id="kpi-projects" class="text-3xl font-bold text-gray-800 dark:text-slate-100 mt-2 tracking-tight">
             0
           </h3>
         </div>
@@ -3984,7 +3984,7 @@ body {
           <p class="text-xs font-bold text-rose-400/80 uppercase tracking-widest">
             FORECASTED BILLING VALUE
           </p>
-          <h3 id="kpi-revenue" class="text-3xl font-bold text-slate-100 mt-2 tracking-tight">
+          <h3 id="kpi-revenue" class="text-3xl font-bold text-gray-800 dark:text-slate-100 mt-2 tracking-tight">
             0
           </h3>
         </div>
@@ -3995,7 +3995,7 @@ body {
           <p class="text-xs font-bold text-emerald-400/80 uppercase tracking-widest">
             ASSEMBLIES TO BE DISPATCHED
           </p>
-          <h3 id="kpi-assemblies" class="text-3xl font-bold text-slate-100 mt-2 tracking-tight">
+          <h3 id="kpi-assemblies" class="text-3xl font-bold text-gray-800 dark:text-slate-100 mt-2 tracking-tight">
             0
           </h3>
         </div>
@@ -4006,7 +4006,7 @@ body {
           <p class="text-xs font-bold text-purple-400/80 uppercase tracking-widest">
             FORECASTED AVG MONTHLY
           </p>
-          <h3 id="kpi-avg" class="text-3xl font-bold text-slate-100 mt-2 tracking-tight">0</h3>
+          <h3 id="kpi-avg" class="text-3xl font-bold text-gray-800 dark:text-slate-100 mt-2 tracking-tight">0</h3>
         </div>
       </div>
       <div id="active-filters-container" class="flex gap-2 mb-4 hidden"></div>
@@ -4568,7 +4568,8 @@ body {
         const gridColor = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0,0,0,0.05)";
         Chart.defaults.color = textColor;
         try { charts.bar.options.scales.x.ticks.color = textColor; charts.bar.options.scales.y.ticks.color = textColor; charts.bar.options.scales.y.title.color = textColor; charts.bar.options.scales.y.grid.color = gridColor; charts.bar.options.plugins.datalabels.color = textColor; charts.bar.update(); } catch(e){}
-        try { charts.pie.options.plugins.legend.labels.color = textColor; charts.pie.update(); } catch(e){}
+        try { charts.pie.options.plugins.legend.labels.color = textColor;
+        if(charts.pie.options.plugins.datalabels) charts.pie.options.plugins.datalabels.color = textColor; charts.pie.update(); } catch(e){}
         try { charts.line.options.scales.x.ticks.color = textColor; charts.line.options.scales.y.ticks.color = textColor; charts.line.options.scales.y.title.color = textColor; charts.line.options.scales.y.grid.color = gridColor; charts.line.options.plugins.datalabels.color = isDark ? "#38bdf8" : "#a81818"; charts.line.options.plugins.datalabels.backgroundColor = isDark ? "rgba(15, 23, 42, 0.8)" : "rgba(255, 255, 255, 0.9)"; charts.line.options.plugins.datalabels.borderColor = isDark ? "rgba(56, 189, 248, 0.3)" : "rgba(168, 24, 24, 0.3)"; charts.line.update(); } catch(e){}
       }
 
@@ -4664,9 +4665,17 @@ body {
                 display: true,
                 position: "right",
                 align: "center",
-                labels: { color: "#cbd5e1", boxWidth: 10, padding: 12, font: { size: 11 }, usePointStyle: true, pointStyle: 'circle' }
+                labels: { color: textColor, boxWidth: 12, padding: 18, font: { size: 11, weight: "bold" }, usePointStyle: true, pointStyle: "circle" }
               },
-              datalabels: { display: false },
+              datalabels: {
+                display: true,
+                anchor: 'end',
+                align: 'end',
+                offset: 12,
+                color: isDark ? "#cbd5e1" : "#1f2937",
+                font: { weight: "bold", size: 11 },
+                formatter: (val) => val.toFixed(2),
+              },
             },
             onClick: (e, els) => {
               if (els.length)
