@@ -352,9 +352,9 @@
       </div>
       <div id="active-filters-container" class="flex gap-2 mb-4 hidden"></div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-6 mb-6 w-full">
         <div
-          class="bg-white p-4 rounded-lg shadow-sm lg:col-span-4 border border-gray-100"
+          class="bg-white p-4 rounded-lg shadow-sm xl:col-span-4 border border-gray-100 min-w-0"
           id="col-bar"
         >
           <div class="flex justify-between items-center mb-2">
@@ -362,12 +362,12 @@
               FORECASTED BILLING ALLOCATION
             </h3>
           </div>
-          <div class="h-60 relative w-full">
+          <div class="h-64 relative w-full">
             <canvas id="barChart"></canvas>
           </div>
         </div>
         <div
-          class="bg-white p-4 rounded-lg shadow-sm lg:col-span-4 border border-gray-100"
+          class="bg-white p-4 rounded-lg shadow-sm xl:col-span-4 border border-gray-100 min-w-0"
           id="col-pie"
         >
           <div class="flex justify-between items-center mb-2">
@@ -375,12 +375,12 @@
               FORECASTED BILLING BY PRODUCTION LINE
             </h3>
           </div>
-          <div class="h-60 relative w-full flex justify-center">
+          <div class="h-64 relative w-full flex justify-center">
             <canvas id="pieChart"></canvas>
           </div>
         </div>
         <div
-          class="bg-white p-4 rounded-lg shadow-sm lg:col-span-4 border border-gray-100"
+          class="bg-white p-4 rounded-lg shadow-sm md:col-span-2 xl:col-span-4 border border-gray-100 min-w-0"
           id="col-line"
         >
           <div class="flex justify-between items-center mb-2">
@@ -388,7 +388,7 @@
               FORECASTED MONTHLY BILLING
             </h3>
           </div>
-          <div class="h-60 relative w-full">
+          <div class="h-64 relative w-full">
             <canvas id="lineChart"></canvas>
           </div>
         </div>
@@ -619,15 +619,15 @@
         const colPie = document.getElementById("col-pie");
         const colLine = document.getElementById("col-line");
 
-        colPie.classList.remove("lg:col-span-4", "lg:col-span-3");
-        colLine.classList.remove("lg:col-span-4", "lg:col-span-5");
+        colPie.classList.remove("xl:col-span-4", "xl:col-span-3", "md:col-span-2");
+        colLine.classList.remove("xl:col-span-4", "md:col-span-2", "xl:col-span-5");
 
         if (context === "forecast") {
-          colPie.classList.add("lg:col-span-4");
-          colLine.classList.add("lg:col-span-4");
+          colPie.classList.add("xl:col-span-4");
+          colLine.classList.add("xl:col-span-4", "md:col-span-2");
         } else {
-          colPie.classList.add("lg:col-span-3");
-          colLine.classList.add("lg:col-span-5");
+          colPie.classList.add("xl:col-span-3");
+          colLine.classList.add("xl:col-span-5", "md:col-span-2");
         }
 
         setTimeout(() => {
@@ -835,127 +835,21 @@
           },
         });
 
-        // 2. PIE CHART — Custom Connector Line Plugin (with anti-overlap)
-        const pieOutlabelPlugin = {
-          id: 'pieOutlabels',
-          afterDraw(chart) {
-            if (chart.config.type !== 'doughnut') return;
-            const { ctx, chartArea } = chart;
-            const meta = chart.getDatasetMeta(0);
-            if (!meta || !meta.data || meta.data.length === 0) return;
-
-            const centerX = (chartArea.left + chartArea.right) / 2;
-            const centerY = (chartArea.top + chartArea.bottom) / 2;
-            const LABEL_HEIGHT = 22; // Min vertical space between labels
-
-            // --- PASS 1: Compute raw positions for all slices ---
-            const items = [];
-            meta.data.forEach((arc, i) => {
-              const data = chart.data.datasets[0].data[i];
-              if (!data || data === 0) return;
-              const label = chart.data.labels[i] || '';
-              const valCr = (data / 10000000).toFixed(2);
-              const midAngle = (arc.startAngle + arc.endAngle) / 2;
-              const outerRadius = arc.outerRadius;
-              const edgeX = centerX + Math.cos(midAngle) * outerRadius;
-              const edgeY = centerY + Math.sin(midAngle) * outerRadius;
-              const isRight = Math.cos(midAngle) >= 0;
-
-              items.push({
-                label, valCr, midAngle, edgeX, edgeY, isRight,
-                targetY: edgeY, // will be adjusted
-                outerRadius,
-              });
-            });
-
-            // --- PASS 2: Resolve overlaps per side ---
-            const leftItems = items.filter(d => !d.isRight).sort((a, b) => a.targetY - b.targetY);
-            const rightItems = items.filter(d => d.isRight).sort((a, b) => a.targetY - b.targetY);
-
-            function resolveOverlaps(group) {
-              for (let i = 1; i < group.length; i++) {
-                const prev = group[i - 1];
-                const curr = group[i];
-                if (curr.targetY - prev.targetY < LABEL_HEIGHT) {
-                  curr.targetY = prev.targetY + LABEL_HEIGHT;
-                }
-              }
-              // If labels overflow bottom, push everything up
-              const maxY = chartArea.bottom - 10;
-              if (group.length > 0 && group[group.length - 1].targetY > maxY) {
-                const overflow = group[group.length - 1].targetY - maxY;
-                group.forEach(g => g.targetY -= overflow);
-              }
-              // Ensure nothing goes above top
-              const minY = chartArea.top + 10;
-              for (let i = 0; i < group.length; i++) {
-                if (group[i].targetY < minY) group[i].targetY = minY + i * LABEL_HEIGHT;
-              }
-            }
-
-            resolveOverlaps(leftItems);
-            resolveOverlaps(rightItems);
-
-            // --- PASS 3: Draw connector lines and labels ---
-            const rightEdgeX = chartArea.right - 10;
-            const leftEdgeX = chartArea.left + 10;
-
-            items.forEach((item) => {
-              const { label, valCr, edgeX, edgeY, isRight, targetY } = item;
-
-              // Elbow: go out from arc edge
-              const elbowLen = 14;
-              const elbowX = edgeX + (isRight ? elbowLen : -elbowLen);
-              const elbowY = targetY;
-
-              // Horizontal tail
-              const endX = isRight ? rightEdgeX - 70 : leftEdgeX + 70;
-
-              ctx.save();
-              // Connector line: arc-edge → elbow → horizontal
-              ctx.beginPath();
-              ctx.moveTo(edgeX, edgeY);
-              ctx.lineTo(elbowX, elbowY);
-              ctx.lineTo(endX, elbowY);
-              ctx.strokeStyle = '#bbb';
-              ctx.lineWidth = 1;
-              ctx.stroke();
-
-              // Dot at arc edge
-              ctx.beginPath();
-              ctx.arc(edgeX, edgeY, 2, 0, Math.PI * 2);
-              ctx.fillStyle = '#999';
-              ctx.fill();
-
-              // Label text
-              const textX = isRight ? endX + 4 : endX - 4;
-              ctx.textAlign = isRight ? 'left' : 'right';
-
-              ctx.font = 'bold 10px Inter, sans-serif';
-              ctx.fillStyle = '#333';
-              ctx.textBaseline = 'bottom';
-              ctx.fillText(label, textX, elbowY - 1);
-
-              ctx.font = '10px Inter, sans-serif';
-              ctx.fillStyle = '#777';
-              ctx.textBaseline = 'top';
-              ctx.fillText(valCr + ' Cr', textX, elbowY + 1);
-
-              ctx.restore();
-            });
-          }
-        };
-
+        // 2. PIE CHART
         const ctxPie = document.getElementById("pieChart").getContext("2d");
         charts.pie = new Chart(ctxPie, {
           type: "doughnut",
           data: { labels: [], datasets: [] },
-          plugins: [ChartDataLabels, pieOutlabelPlugin],
+          plugins: [ChartDataLabels],
           options: {
             ...commonOpts,
-            layout: { padding: 100 },
+            layout: { padding: 20 },
             plugins: {
-              legend: { display: false },
+              legend: {
+                display: true,
+                position: "right",
+                labels: { boxWidth: 10, padding: 8, font: { size: 10 } }
+              },
               datalabels: { display: false },
             },
             onClick: (e, els) => {
@@ -1067,9 +961,37 @@
           const prodData = groupBy(baseData, "product");
           const prodHighlightSet = new Set(highlightData.map((d) => d.product));
 
-          charts.pie.options.cutout = "55%";
-          charts.pie.options.layout.padding = 100;
-          charts.pie.options.plugins.legend = { display: false };
+          charts.pie.options.cutout = "50%";
+          charts.pie.options.layout.padding = 15;
+          charts.pie.options.plugins.legend = {
+            display: true,
+            position: "right",
+            labels: {
+              boxWidth: 10,
+              padding: 8,
+              font: { size: 9 },
+              generateLabels: (chart) => {
+                const data = chart.data;
+                if (data.labels.length && data.datasets.length) {
+                  return data.labels.map((label, i) => {
+                    const meta = chart.getDatasetMeta(0);
+                    const ds = data.datasets[0];
+                    const arc = meta.data[i];
+                    const fill = arc && arc.options.backgroundColor ? arc.options.backgroundColor : ds.backgroundColor[i];
+                    const val = ds.data[i];
+                    const valCr = (val / 10000000).toFixed(2);
+                    return {
+                      text: `${label} (${valCr} Cr)`,
+                      fillStyle: fill,
+                      hidden: isNaN(ds.data[i]) || meta.data[i].hidden,
+                      index: i
+                    };
+                  });
+                }
+                return [];
+              }
+            }
+          };
           charts.pie.options.plugins.datalabels = { display: false };
 
           charts.pie.data.labels = Object.keys(prodData);
