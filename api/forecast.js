@@ -9,6 +9,9 @@ const DRIVE_ID = "b!-1MZkE8WdUCwHHHaP1rzH_PqGBIe57tJvXHEOqKXXGHlO_rJZfmnQLPiI9rd
 const FILE_ID = "01YUMYDKJKYCODJHCFLVEJRHTMXUVRRHRO";
 const SHEET_NAME = "PROJECTS";
 
+// --- SHORT MONTH NAMES ---
+const MONTH_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
 // --- UTILS ---
 async function getAccessToken() {
   const url = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`;
@@ -29,41 +32,27 @@ function normalizeStatus(val) {
   return "Not Dispatched";
 }
 
-function extractLine(project) {
-  if (!project) return "";
-  const parts = String(project).split("-");
-  return parts[parts.length - 1].trim();
-}
-
-function mapCategory(line) {
-  const l = line.toUpperCase();
-  if (["6HI CRM", "4HI CRM", "CRM", "6HI", "6 STAND TANDEM MILL", "5 STAND TANDEM MILL"].includes(l)) return "CRM";
-  if (["CGL", "GI/GL LINE"].includes(l)) return "CGL";
-  if (["SPARE", "SPARES", "POR SPARE", "JSW BAWAL"].includes(l)) return "SPARE";
-  if (l === "ARP") return "ARP";
-  if (l === "CCL") return "CCL";
-  if (["REVAMP", "TPI REVAMP"].includes(l)) return "REVAMP";
-  if (["TRIMMING", "TRIMMER"].includes(l)) return "TRIMMING";
-  if (["PICKLING", "5 TANK PICKLING"].includes(l)) return "PICKLING";
-  if (["4HI SPM", "SPM"].includes(l)) return "SPM";
-  if (l === "APL") return "APL";
-  return "OTHER";
-}
-
 /**
  * Convert Excel serial number to JS Date.
- * Excel serial 1 = Jan 1, 1900. JS epoch = Jan 1, 1970.
  */
 function excelSerialToDate(serial) {
   if (!serial) return null;
-  // If it's already a string date, try parsing directly
   if (typeof serial === "string") {
     const d = new Date(serial);
     return isNaN(d) ? null : d;
   }
   if (typeof serial !== "number") return null;
-  // Excel serial to JS date (subtract Excel epoch offset)
   return new Date((serial - 25569) * 86400000);
+}
+
+/**
+ * Format a Date as "May/26" (short month + "/" + 2-digit year).
+ */
+function formatMonthYear(date) {
+  if (!(date instanceof Date) || isNaN(date)) return "";
+  const m = MONTH_SHORT[date.getMonth()];
+  const y = String(date.getFullYear()).slice(-2);
+  return `${m}/${y}`;
 }
 
 /**
@@ -71,9 +60,45 @@ function excelSerialToDate(serial) {
  */
 function isInFY2026_27(dispatchDate) {
   if (!(dispatchDate instanceof Date) || isNaN(dispatchDate)) return false;
-  const fyStart = new Date(2026, 3, 1, 0, 0, 0);     // April 1, 2026
-  const fyEnd = new Date(2027, 2, 31, 23, 59, 59);    // March 31, 2027
+  const fyStart = new Date(2026, 3, 1, 0, 0, 0);
+  const fyEnd = new Date(2027, 2, 31, 23, 59, 59);
   return dispatchDate >= fyStart && dispatchDate <= fyEnd;
+}
+
+/**
+ * Derive category from Column A project name.
+ * Replicates the Excel LET/XMATCH formula logic exactly:
+ *   1. Take everything after the first "-" in the project name (TEXTAFTER)
+ *   2. Search for keywords IN ORDER — first match wins
+ *
+ * Keyword order and results match the Excel formula exactly.
+ */
+const CATEGORY_KEYS = [
+  "JSW BAWAL", "SPARE", "SPARES", "CRM", "TANDEM MILL",
+  "6HI", "CGL", "GI/GL", "ARP", "CCL",
+  "REVAMP", "TRIM", "ELECTRICAL", "MILL BEARING",
+  "SPM", "APL", "SLITTING", "PICKLING", "REWINDING",
+];
+const CATEGORY_RESULTS = [
+  "SPARE",     "SPARE",  "SPARE",  "CRM",  "CRM",
+  "CRM",       "CGL",    "CGL",    "ARP",  "CCL",
+  "REVAMP",    "TRIMMING","ELECTRICAL","MILL BEARING",
+  "SPM",       "APL",    "SLITTING","PICKLING","REWINDING",
+];
+
+function deriveCategory(projectName) {
+  if (!projectName) return "OTHER";
+  // Get everything after the first "-" (like TEXTAFTER in Excel)
+  const dashIdx = String(projectName).indexOf("-");
+  if (dashIdx === -1) return "OTHER";
+  const line = String(projectName).substring(dashIdx + 1).toUpperCase();
+
+  for (let i = 0; i < CATEGORY_KEYS.length; i++) {
+    if (line.includes(CATEGORY_KEYS[i])) {
+      return CATEGORY_RESULTS[i];
+    }
+  }
+  return "OTHER";
 }
 
 /**
@@ -111,25 +136,23 @@ module.exports = async (req, res) => {
       .map((r) => {
         // Column I (index 8) = DISP. MONTH (Excel serial number)
         const dispatchDate = excelSerialToDate(r[8]);
-        // Column R (index 17) = CATEGORY
-        const category = r[17] ? String(r[17]).trim() : extractLine(r[0]);
-        // Column S (index 18) = DISPATCH MONTH NAME (human readable, e.g., "Apr 2027")
-        const monthName = r[18] ? String(r[18]).trim() : "";
-        // Extract just the short month (e.g., "Apr" from "Apr 2027")
-        const shortMonth = monthName ? monthName.split(" ")[0] : (dispatchDate ? dispatchDate.toLocaleString("en-US", { month: "short" }) : "");
+        // Derive category from Column A — NO dependency on Column R
+        const category = deriveCategory(r[0]);
+        // Format month from Column I — NO dependency on Column S
+        const monthDisplay = formatMonthYear(dispatchDate); // "May/26"
+        const shortMonth = dispatchDate ? MONTH_SHORT[dispatchDate.getMonth()] : "";
 
         return {
           project: String(r[0]).trim(),                        // Column A
-          source: mapSource(r[1]),                             // Column B (BOI/MANF.)
-          pm: String(r[2] || "").trim(),                       // Column C (PM)
-          assembly: String(r[3] || "").trim(),                 // Column D (ASSEMBLY)
+          source: mapSource(r[1]),                             // Column B
+          pm: String(r[2] || "").trim(),                       // Column C
+          assembly: String(r[3] || "").trim(),                 // Column D
           billing: Number(String(r[6] || 0).replace(/[^0-9.-]/g, "")) || 0,  // Column G
-          status: normalizeStatus(r[7]),                       // Column H (DISP. STATUS)
+          status: normalizeStatus(r[7]),                       // Column H
           dispatchMonth: dispatchDate,                         // Column I (date object)
-          month: shortMonth,                                   // Short month name
-          monthDisplay: monthName,                             // Full month display
-          line: extractLine(r[0]),
-          category: mapCategory(category),
+          month: shortMonth,                                   // "May" (for chart grouping)
+          monthDisplay: monthDisplay,                          // "May/26" (for display)
+          category: category,                                  // Derived from Column A
         };
       })
       .filter((d) => isInFY2026_27(d.dispatchMonth));

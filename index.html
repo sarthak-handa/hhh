@@ -433,24 +433,7 @@
     <!-- Attendance Modal Removed -->
     <img id="pdfLogo" src="assets/img/YDLOGO.png" style="display: none" />
 
-    <footer id="footer" class="footer position-relative light-background">
-      <div class="container-fluid footer-top">
-        <div class="row gy-4" style="padding-left: 50px">
-          <div class="col-lg-3 col-md-3 footer-about">
-            <a href="ourClients.html" class="logo d-flex align-items-center"
-              ><img height="100" src="assets/img/yd-footer.png"
-            /></a>
-          </div>
-        </div>
-      </div>
-      <div class="container copyright text-center">
-        <p>
-          © <span>Copyright</span>
-          <strong class="px-1 sitename">YOGIJI DIGI</strong>
-          <span>All Rights Reserved</span>
-        </p>
-      </div>
-    </footer>
+
     <script src="assets/js/config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="assets/vendor/aos/aos.js"></script>
@@ -547,8 +530,9 @@
               pm: item.pm,
               product: item.category,
               month: item.month ? item.month.trim() : "",
+              monthDisplay: item.monthDisplay || "",   // "May/26" format
               status: item.status || "Not Dispatched",
-              source: item.source || "",       // Pre-mapped from Column B by API
+              source: item.source || "",
               val: val,
               date: formatDate(item.dispatchMonth),
               context: state.context,
@@ -969,7 +953,7 @@
           plugins: [ChartDataLabels, pieOutlabelPlugin],
           options: {
             ...commonOpts,
-            layout: { padding: 80 },
+            layout: { padding: 100 },
             plugins: {
               legend: { display: false },
               datalabels: { display: false },
@@ -1084,7 +1068,7 @@
           const prodHighlightSet = new Set(highlightData.map((d) => d.product));
 
           charts.pie.options.cutout = "55%";
-          charts.pie.options.layout.padding = 80;
+          charts.pie.options.layout.padding = 100;
           charts.pie.options.plugins.legend = { display: false };
           charts.pie.options.plugins.datalabels = { display: false };
 
@@ -1374,8 +1358,8 @@
 
                   const statusBadge =
                     i.status === "Dispatched"
-                      ? `<span class="success-badge">${i.month} ${i.year}</span>`
-                      : `<span class="">${i.month} ${i.year}</span>`;
+                      ? `<span class="success-badge">${i.monthDisplay || (i.month + '/' + (i.year || '').slice(-2))}</span>`
+                      : `<span>${i.monthDisplay || (i.month + '/' + (i.year || '').slice(-2))}</span>`;
 
                   return `<div class="row d-flex flex justify-between items-center py-2 border-b border-gray-200 last:border-0 text-sm hover:bg-white transition-colors">
 <span class="col-4 text-gray-600 pl-4 border-l-2 ${
