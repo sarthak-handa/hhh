@@ -4573,7 +4573,7 @@ body {
         try { charts.line.options.scales.x.ticks.color = textColor; charts.line.options.scales.y.ticks.color = textColor; charts.line.options.scales.y.title.color = textColor; charts.line.options.scales.y.grid.color = gridColor; charts.line.options.plugins.datalabels.color = isDark ? "#38bdf8" : "#a81818"; charts.line.options.plugins.datalabels.backgroundColor = isDark ? "rgba(15, 23, 42, 0.8)" : "rgba(255, 255, 255, 0.9)"; charts.line.options.plugins.datalabels.borderColor = isDark ? "rgba(56, 189, 248, 0.3)" : "rgba(168, 24, 24, 0.3)"; charts.line.update(); } catch(e){}
       }
 
-      function initCharts() {
+      function initCharts() { const isDark = document.documentElement.classList.contains("dark"); const textColor = isDark ? "#cbd5e1" : "#4b5563"; 
 
         Chart.register(ChartDataLabels);
         // --- Premium Chart VFX & Animations ---
