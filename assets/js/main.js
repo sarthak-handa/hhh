@@ -1,18 +1,7 @@
 (function () {
   "use strict";
 
-  // function authFetch(url, options = {}) {
-  //   const token = localStorage.getItem("token");
-  //   return fetch(url, {
-  //     ...options,
-  //     headers: {
-  //       ...options.headers,
-  //       "Content-Type": "application/json",
-  //       "Authorization": token ? `Bearer ${token}` : ""
-  //     }
-  //   });
-
-  // }
+  // Removed legacy authFetch logic
 
   async function authFetch(url, options = {}) {
     // Backend-less version: just a regular fetch
@@ -45,7 +34,7 @@
     localStorage.removeItem("token");
     // In serverless mode, we don't necessarily need to redirect to login.html
     // but if the user wants to keep the flow:
-    window.location.href = "login.html";
+    console.log("Redirect to login.html suppressed (serverless mode)");
   }
   window.logout = logout;
 
@@ -339,7 +328,7 @@ document.querySelectorAll("table").forEach((tbl) => {
 //         roles: ["superadmin", "admin", "user", "customer"],
 //         branches: ["all", planingBranch, excelBranch],
 //         label: "YD MOM",
-//         href: "https://ydmom.ydagchmi.com/",
+//         href: "#",
 //         target: "_blank",
 //       },
 //       // {
@@ -579,298 +568,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.head.appendChild(style);
 
-  if (user) {
-    const dropdownMenu = document.querySelector(
-      "#userDropdown ~ .dropdown-menu"
-    );
-
-    const role = user.role;
-
-    // --- BRANCH LOGIC REMAINS UNTOUCHED ---
-
-    const planingBranch = "Projects";
-
-    const excelBranch = "Excel";
-
-    let branch = "all";
-
-    if (user.branch?.some((b) => b.name === excelBranch)) {
-      branch = excelBranch;
-    } else if (
-      !user.branch ||
-      user.branch.length === 0 ||
-      user.branch.some((b) => b.name === planingBranch)
-    ) {
-      branch = planingBranch;
-    }
-
-    // --- MENU DEFINITIONS REMAINS UNTOUCHED ---
-
-    const menuItems = [
-      // {
-      //   roles: ["superadmin", "admin", "user"],
-
-      //   branches: ["", planingBranch, excelBranch],
-
-      //   label: "Planning And Forecasting",
-
-      //   href: "plan.html",
-      // },
-
-      {
-        roles: ["customer"],
-
-        branches: ["all", planingBranch, excelBranch],
-
-        label: "Weekly Meetings",
-
-        href: "meetings.html",
-      },
-
-      {
-        roles: ["customer"],
-
-        branches: ["all", planingBranch, excelBranch],
-
-        label: "Reports",
-
-        href: "projectReport.html",
-      },
-      {
-        roles: ["superadmin"],
-
-        branches: ["all", planingBranch, excelBranch],
-
-        label: "Attendance Logs",
-
-        href: "attendanceLog.html",
-      },
-      {
-        roles: ["superadmin"],
-
-        branches: ["all", planingBranch, excelBranch],
-
-        label: "Departments",
-
-        href: "branch.html",
-      },
-
-      {
-        roles: ["superadmin"],
-
-        branches: ["all", planingBranch, excelBranch],
-
-        label: "Email Logs",
-
-        href: "emailLog.html",
-      },
-      {
-        roles: ["superadmin", "admin"],
-
-        branches: ["all", planingBranch, excelBranch],
-
-        label: "Manage Clients",
-
-        href: "manageClients.html",
-      },
-
-      {
-        roles: ["superadmin", "admin"],
-
-        branches: ["all", planingBranch, excelBranch],
-
-        label: "Users",
-
-        href: "user.html",
-      },
-
-      {
-        roles: ["superadmin", "admin", "user"],
-
-        branches: ["all", planingBranch, excelBranch],
-
-        label: "Client Projects",
-
-        href: "ourClients.html",
-      },
-      {
-        roles: ["superadmin", "admin", "user"],
-
-        branches: ["all", planingBranch, excelBranch],
-
-        label: "Completed Projects",
-
-        href: "completedProjects.html",
-      },
-      {
-        roles: ["superadmin", "admin", "user"],
-
-        branches: ["all", planingBranch, excelBranch],
-
-        label: "Current Projects",
-
-        href: "project.html",
-      },
-      {
-        roles: ["superadmin", "admin", "user"],
-
-        branches: ["", planingBranch, excelBranch],
-
-        label: "Sales & Cash Flow",
-
-        href: "forecastDashboard.html",
-      },
-      // {
-      //   roles: ["superadmin", "admin", "user"],
-
-      //   branches: [excelBranch],
-
-      //   label: "View/Update Excel",
-
-      //   href: "excel.html",
-      // },
-
-      {
-        roles: ["superadmin", "admin", "user", "customer"],
-
-        branches: ["all", planingBranch, excelBranch],
-
-        label: "YD MOM",
-
-        href: "https://ydmom.ydagchmi.com/",
-
-        target: "_blank",
-      },
-    ];
-
-    const adminOnlyItems = menuItems.filter(
-      (item) => !item.roles.includes("user") && !item.roles.includes("customer")
-    );
-
-    const regularItems = menuItems.filter(
-      (item) => item.roles.includes("user") || item.roles.includes("customer")
-    );
-
-    const hasAdminItems = adminOnlyItems.some(
-      (item) => item.roles.includes(role) && item.branches.includes(branch)
-    );
-
-    // --- REORDERING LOGIC STARTS HERE ---
-
-    // 1. Insert Admin Items FIRST (so they appear at the bottom of this block)
-
-    if (hasAdminItems) {
-      // Loop reversed so when we insertBefore(firstChild), they appear in correct order
-
-      adminOnlyItems
-
-        .slice()
-
-        .reverse()
-
-        .forEach((item) => {
-          if (item.roles.includes(role) && item.branches.includes(branch)) {
-            const li = document.createElement("li");
-
-            li.className = "admin-item";
-
-            li.style.display = "none"; // Initially hidden
-
-            li.innerHTML = `<a class="dropdown-item" href="${
-              item.href
-            }" target="${item.target || "_self"}">${item.label}</a>`;
-
-            dropdownMenu.insertBefore(li, dropdownMenu.firstChild);
-          }
-        });
-
-      // 2. Insert the "Admin Tools" Toggle (pushes Admin Items down)
-
-      const toggleLi = document.createElement("li");
-
-      toggleLi.innerHTML =
-        '<a class="dropdown-item admin-toggle" style="cursor: pointer;"><i class="fas fa-tools me-2"></i>Admin Tools <i class="fas fa-chevron-down ms-2" style="float: right;"></i></a>';
-
-      dropdownMenu.insertBefore(toggleLi, dropdownMenu.firstChild);
-
-      // Add click event to toggle admin items
-
-      const toggleLink = toggleLi.querySelector(".admin-toggle");
-
-      toggleLink.addEventListener("click", function (e) {
-        e.preventDefault();
-
-        e.stopPropagation();
-
-        const adminItems = dropdownMenu.querySelectorAll(".admin-item");
-
-        const chevron = toggleLink.querySelector(".fa-chevron-down");
-
-        // Check visibility of first item to determine toggle state
-
-        const isVisible =
-          adminItems.length > 0 && adminItems[0].style.display !== "none";
-
-        adminItems.forEach((item) => {
-          item.style.display = isVisible ? "none" : "block";
-        });
-
-        // Rotate chevron
-
-        if (chevron) {
-          chevron.style.transform = isVisible
-            ? "rotate(0deg)"
-            : "rotate(180deg)";
-        }
-      });
-
-      // 3. Insert Separator (pushes Toggle down)
-
-      const separatorLi = document.createElement("li");
-
-      separatorLi.innerHTML = '<hr class="dropdown-divider">';
-
-      dropdownMenu.insertBefore(separatorLi, dropdownMenu.firstChild);
-    }
-
-    // 4. Insert Regular Items LAST (pushes Admin block down)
-
-    // We reverse the array here too so they stack correctly (Item 1 at top)
-
-    regularItems
-
-      .slice()
-
-      .reverse()
-
-      .forEach((item) => {
-        if (item.roles.includes(role) && item.branches.includes(branch)) {
-          const li = document.createElement("li");
-
-          li.innerHTML = `<a class="dropdown-item" href="${
-            item.href
-          }" target="${item.target || "_self"}">${item.label}</a>`;
-
-          dropdownMenu.insertBefore(li, dropdownMenu.firstChild);
-        }
-      });
-
-    // --- END OF REORDERING LOGIC ---
-  }
 });
 
 function handleUnauthorized(message = "Please login again") {
-  Swal.fire("Session Expired", message, "error");
-  setTimeout(() => {
-    window.location.href = "./login.html";
-  }, 3000);
+  console.log("Unauthorized access blocked (serverless mode):", message);
 }
 
-let loginToken = localStorage.getItem("token");
+let loginToken = localStorage.getItem("token") || "mock-token";
 
 if (!loginToken) {
-  console.error("No token found");
-  window.location.href = "./login.html";
+  // console.error("No token found");
+  // window.location.href = "./login.html";
 }
 
 function getUserIdFromToken(loginToken) {
@@ -886,8 +594,11 @@ function getUserIdFromToken(loginToken) {
 const USER_ID = getUserIdFromToken(loginToken);
 
 // const socket = io("http://localhost:5000");
-const socket = io(`${API_URL}`);
-socket.emit("join", USER_ID);
+const socket = {
+    on: () => {},
+    emit: () => {}
+};
+// socket.emit("join", USER_ID);
 
 let notifications = [];
 

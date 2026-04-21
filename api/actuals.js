@@ -2,9 +2,9 @@ const axios = require("axios");
 const XLSX = require("xlsx");
 
 // --- CONFIGURATION ---
-const TENANT_ID = "a0e08c58-7003-49f2-a898-bfb4a1b05815";
-const CLIENT_ID = "674b7459-54de-4d1d-b13a-0070c7b57d58";
-const CLIENT_SECRET = "fqA8Q~TccmdWqpGixZtUunUCXnEUlzWTqzblpbsp";
+const TENANT_ID = process.env.TENANT_ID || "a0e08c58-7003-49f2-a898-bfb4a1b05815";
+const CLIENT_ID = process.env.CLIENT_ID || "674b7459-54de-4d1d-b13a-0070c7b57d58";
+const CLIENT_SECRET = process.env.GRAPH_CLIENT_SECRET;
 const DRIVE_ID = "b!-1MZkE8WdUCwHHHaP1rzH_PqGBIe57tJvXHEOqKXXGHlO_rJZfmnQLPiI9rdBJ_7";
 const FILE_ID = "01YUMYDKJ4P2DAPAXKUNCJH5CCCZ3RZ35F";
 const SHEET_NAME = "ActualBilling";

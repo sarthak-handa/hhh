@@ -1,0 +1,22 @@
+
+--- SALES & CASH FLOW (1).xlsx ---
+Sheet Names: CASH FLOW, Sheet2, PROJECTS
+
+Sheet: CASH FLOW
+Headers (Row 1): ["Row Labels","Sum of PAYMENT REQ.\nMAY","Sum of PAYMENT REQ.","Sum of PAYMENT REQ.\nJULY","Sum of PAYMENT REQ.\nAUG","Sum of PAYMENT REQ.\nSEPT","Sum of PAYMENT REQ.\nOCT","Sum of PAYMENT REQ.\nNOV","Sum of PAYMENT REQ.\nDEC","Sum of PAYMENT REQ.\nJAN"]
+Row 2: ["2012-APL-SPARES"]
+
+Sheet: Sheet2
+Headers (Row 1): ["DISP. \nMONTH","(Multiple Items)"]
+Row 2: []
+
+Sheet: PROJECTS
+Headers (Row 1): ["PROJECT","BOI /MANF.","PM","ASSEMBLY","RISK\nFB/ PAYMENT/ RED FLAG","BILLING \nVALUE ($)","BILLING\n VALUE (Rs.)","DISP. \nSTATUS","DISP. \nMONTH","WEEKLY\nDISPATCH","DRG. \nREQ.","PENDING BOI ORDERING. \n","VENDOR","REMARKS","PAYMENT REQ.\nFEB","NATURE OF PAYMENT (MAR)","PAYMENT REQ.\nMAR","CATEGORY","DISPATCH MONTH NAME"]
+Row 2: ["2605-PROMPT-CCL",null,"ADITYA SHARMA","RECOILER ASSY#1",null,null,9000000,"Not Disp.",46505,null,true,null,null,null,null,null,null,"CCL","Apr 2027"]
+
+--- ActualBilling (1).xlsx ---
+Sheet Names: ActualBilling
+
+Sheet: ActualBilling
+Headers (Row 1): ["PROJECT","BOI /MANUFACTURING","PM","ASSEMBLY","RISK","BILLING VALUE ($)","BILLING VALUE (Rs.)","DISPATCH STATUS","DISPATCH MONTH","STATUS","ASSY DRGS.","REMARKS","PAYMENT REQ.\nJAN","NATURE OF PAYMENT (FEB)","PAYMENT REQ.\nFEB","NATURE OF PAYMENT (MAR)","PAYMENT REQ.\nMAR","CATEGORY","DISPATCH MONTH NAME"]
+Row 2: ["2310-SURYA-4HI CRM",null,"MAYANK",null,null,null,50000,null,45748,null,null,null,null,null,null,null,null,null,"Apr 2025"]

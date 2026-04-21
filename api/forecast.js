@@ -2,9 +2,9 @@ const axios = require("axios");
 const XLSX = require("xlsx");
 
 // --- CONFIGURATION ---
-const TENANT_ID = "a0e08c58-7003-49f2-a898-bfb4a1b05815";
-const CLIENT_ID = "674b7459-54de-4d1d-b13a-0070c7b57d58";
-const CLIENT_SECRET = "fqA8Q~TccmdWqpGixZtUunUCXnEUlzWTqzblpbsp";
+const TENANT_ID = process.env.TENANT_ID || "a0e08c58-7003-49f2-a898-bfb4a1b05815";
+const CLIENT_ID = process.env.CLIENT_ID || "674b7459-54de-4d1d-b13a-0070c7b57d58";
+const CLIENT_SECRET = process.env.GRAPH_CLIENT_SECRET;
 const DRIVE_ID = "b!-1MZkE8WdUCwHHHaP1rzH_PqGBIe57tJvXHEOqKXXGHlO_rJZfmnQLPiI9rdBJ_7";
 const FILE_ID = "01YUMYDKJKYCODJHCFLVEJRHTMXUVRRHRO";
 const SHEET_NAME = "PROJECTS";
@@ -60,17 +60,18 @@ function isInCurrentFiscalWindow(dispatchDate) {
   const currentMonth = now.getMonth();
   const startOfCurrentMonth = new Date(currentYear, currentMonth, 1);
 
-  if (dispatchDate < startOfCurrentMonth) return false;
+  // Broaden window: Show data from 12 months ago up to end of next fiscal year
+  const dataStartDate = new Date(startOfCurrentMonth);
+  dataStartDate.setMonth(dataStartDate.getMonth() - 12);
 
+  let fiscalYearStart;
   if (currentMonth <= 2) {
     fiscalYearStart = currentYear - 1;
-    fiscalYearEnd = currentYear;
   } else {
     fiscalYearStart = currentYear;
-    fiscalYearEnd = currentYear + 1;
   }
-  const fiscalEndDate = new Date(fiscalYearStart + 1, 2, 31, 23, 59, 59);
-  return dispatchDate >= startOfCurrentMonth && dispatchDate <= fiscalEndDate;
+  const fiscalEndDate = new Date(fiscalYearStart + 2, 2, 31, 23, 59, 59); // Next year's end
+  return dispatchDate >= dataStartDate && dispatchDate <= fiscalEndDate;
 }
 
 // --- MAIN HANDLER ---
