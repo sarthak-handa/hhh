@@ -33,12 +33,22 @@ function normalizeStatus(val) {
 }
 
 /**
- * Convert Excel serial number to JS Date.
+ * Convert Excel serial number or string to JS Date.
  */
 function excelSerialToDate(serial) {
   if (!serial) return null;
   if (typeof serial === "string") {
-    const d = new Date(serial);
+    const s = serial.trim();
+    // Check if it's "May/26", "Apr-26", etc.
+    const mmyyMatch = s.match(/^([A-Za-z]{3})[\/\-](\d{2})$/);
+    if (mmyyMatch) {
+      const monthStr = mmyyMatch[1].charAt(0).toUpperCase() + mmyyMatch[1].slice(1).toLowerCase();
+      const mIdx = MONTH_SHORT.indexOf(monthStr);
+      if (mIdx !== -1) {
+        return new Date(2000 + parseInt(mmyyMatch[2]), mIdx, 15, 12, 0, 0); // Mid-month arbitrary day
+      }
+    }
+    const d = new Date(s);
     return isNaN(d) ? null : d;
   }
   if (typeof serial !== "number") return null;

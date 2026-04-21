@@ -784,10 +784,109 @@
       // --- CHART INITIALIZATION (FIXED ROTATION HERE) ---
       function initCharts() {
         Chart.register(ChartDataLabels);
+        // --- Premium Chart VFX & Animations ---
+        const vfxAnimation = {
+          duration: 2000,
+          easing: "easeOutExpo",
+        };
+
         const commonOpts = {
           responsive: true,
           maintainAspectRatio: false,
-          animation: { duration: 400 },
+          animation: vfxAnimation,
+          plugins: { tooltip: { padding: 12, cornerRadius: 8, bodyFont: { size: 13 }, titleFont: { size: 14, weight: 'bold' } } }
+        };
+
+        // --- Custom Connector Line Plugin (Straws) ---
+        const pieOutlabelPlugin = {
+          id: 'pieOutlabels',
+          afterDraw(chart) {
+            if (chart.config.type !== 'doughnut') return;
+            // Only draw if animation is finished or mostly finished to avoid weird moving lines
+            const { ctx, chartArea } = chart;
+            const meta = chart.getDatasetMeta(0);
+            if (!meta || !meta.data || meta.data.length === 0) return;
+
+            const centerX = (chartArea.left + chartArea.right) / 2;
+            const centerY = (chartArea.top + chartArea.bottom) / 2;
+            const LABEL_HEIGHT = 16; 
+
+            const items = [];
+            meta.data.forEach((arc, i) => {
+              const data = chart.data.datasets[0].data[i];
+              if (!data || data === 0) return;
+              const valCr = (data / 10000000).toFixed(2);
+              const midAngle = (arc.startAngle + arc.endAngle) / 2;
+              const outerRadius = arc.outerRadius;
+              const edgeX = centerX + Math.cos(midAngle) * outerRadius;
+              const edgeY = centerY + Math.sin(midAngle) * outerRadius;
+              const isRight = Math.cos(midAngle) >= 0;
+
+              items.push({
+                valCr, midAngle, edgeX, edgeY, isRight,
+                targetY: edgeY,
+                color: chart.data.datasets[0].backgroundColor[i]
+              });
+            });
+
+            const leftItems = items.filter(d => !d.isRight).sort((a, b) => a.targetY - b.targetY);
+            const rightItems = items.filter(d => d.isRight).sort((a, b) => a.targetY - b.targetY);
+
+            function resolveOverlaps(group) {
+              for (let i = 1; i < group.length; i++) {
+                const prev = group[i - 1];
+                const curr = group[i];
+                if (curr.targetY - prev.targetY < LABEL_HEIGHT) {
+                  curr.targetY = prev.targetY + LABEL_HEIGHT;
+                }
+              }
+              const maxY = chartArea.bottom - 5;
+              if (group.length > 0 && group[group.length - 1].targetY > maxY) {
+                const overflow = group[group.length - 1].targetY - maxY;
+                group.forEach(g => g.targetY -= overflow);
+              }
+              const minY = chartArea.top + 5;
+              for (let i = 0; i < group.length; i++) {
+                if (group[i].targetY < minY) group[i].targetY = minY + i * LABEL_HEIGHT;
+              }
+            }
+
+            resolveOverlaps(leftItems);
+            resolveOverlaps(rightItems);
+
+            const rightEdgeX = chartArea.right - 80;
+            const leftEdgeX = chartArea.left + 50;
+
+            items.forEach((item) => {
+              const { valCr, edgeX, edgeY, isRight, targetY, color } = item;
+              const elbowLen = 12;
+              const elbowX = edgeX + (isRight ? elbowLen : -elbowLen);
+              const elbowY = targetY;
+              const endX = isRight ? rightEdgeX - 25 : leftEdgeX + 25;
+
+              ctx.save();
+              ctx.beginPath();
+              ctx.moveTo(edgeX, edgeY);
+              ctx.lineTo(elbowX, elbowY);
+              ctx.lineTo(endX, elbowY);
+              ctx.strokeStyle = '#d1d5db';
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
+
+              ctx.beginPath();
+              ctx.arc(edgeX, edgeY, 3, 0, Math.PI * 2);
+              ctx.fillStyle = color || '#9ca3af';
+              ctx.fill();
+
+              const textX = isRight ? endX + 6 : endX - 6;
+              ctx.textAlign = isRight ? 'left' : 'right';
+              ctx.textBaseline = 'middle';
+              ctx.font = 'bold 11px Inter, sans-serif';
+              ctx.fillStyle = '#4b5563';
+              ctx.fillText(valCr, textX, elbowY);
+              ctx.restore();
+            });
+          }
         };
 
         // 1. BAR CHART
@@ -840,15 +939,15 @@
         charts.pie = new Chart(ctxPie, {
           type: "doughnut",
           data: { labels: [], datasets: [] },
-          plugins: [ChartDataLabels],
+          plugins: [ChartDataLabels, pieOutlabelPlugin],
           options: {
             ...commonOpts,
-            layout: { padding: 20 },
+            layout: { padding: 30 },
             plugins: {
               legend: {
                 display: true,
                 position: "right",
-                labels: { boxWidth: 10, padding: 8, font: { size: 10 } }
+                labels: { boxWidth: 12, padding: 12, font: { size: 10 } }
               },
               datalabels: { display: false },
             },
@@ -962,36 +1061,9 @@
           const prodHighlightSet = new Set(highlightData.map((d) => d.product));
 
           charts.pie.options.cutout = "50%";
-          charts.pie.options.layout.padding = 15;
-          charts.pie.options.plugins.legend = {
-            display: true,
-            position: "right",
-            labels: {
-              boxWidth: 10,
-              padding: 8,
-              font: { size: 9 },
-              generateLabels: (chart) => {
-                const data = chart.data;
-                if (data.labels.length && data.datasets.length) {
-                  return data.labels.map((label, i) => {
-                    const meta = chart.getDatasetMeta(0);
-                    const ds = data.datasets[0];
-                    const arc = meta.data[i];
-                    const fill = arc && arc.options.backgroundColor ? arc.options.backgroundColor : ds.backgroundColor[i];
-                    const val = ds.data[i];
-                    const valCr = (val / 10000000).toFixed(2);
-                    return {
-                      text: `${label} (${valCr} Cr)`,
-                      fillStyle: fill,
-                      hidden: isNaN(ds.data[i]) || meta.data[i].hidden,
-                      index: i
-                    };
-                  });
-                }
-                return [];
-              }
-            }
-          };
+          charts.pie.options.layout.padding = 30;
+          charts.pie.options.plugins.legend.display = true;
+          // Hide standard datalabels in favor of our custom straw plugin
           charts.pie.options.plugins.datalabels = { display: false };
 
           charts.pie.data.labels = Object.keys(prodData);
