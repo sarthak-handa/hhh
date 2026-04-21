@@ -50,7 +50,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        transition: opacity 0.3s ease-out;
+        transition: opacity 0.15s ease-out;
       }
 
       /* Simple, responsive CSS Spinner */
@@ -60,7 +60,7 @@
         border: 5px solid #f3f3f3; /* Light grey */
         border-top: 5px solid #a81818; /* Yogi Red Brand Color */
         border-radius: 50%;
-        animation: spin 1s linear infinite;
+        animation: spin 0.6s linear infinite;
       }
 
       @keyframes spin {
@@ -180,84 +180,11 @@
           </a>
 
           <div class="custom-nav-container">
-            <a
-              href="projectReport.html"
-              class="nav-btn-custom"
-              style="background: #fde2e4; color: #9f1239"
-            >
-              Report
-            </a>
-            <a
-              href="meetings.html"
-              class="nav-btn-custom"
-              style="background: #fff4cc; color: #92400e"
-            >
-              Meeting
-            </a>
-            <a
-              href="#"
-              class="nav-btn-custom"
-              style="background: #e0f2fe; color: #0369a1"
-              data-bs-toggle="modal"
-              data-bs-target="#attendanceModal"
-            >
-              Attendance
-            </a>
+            <!-- Navigation buttons removed for refined dashboard view -->
           </div>
 
           <div class="right-icons-group">
-            <a
-              href="ourClients.html"
-              class="position-relative text-decoration-none"
-            >
-              <i
-                class="fa-solid fa-bell fa-lg"
-                style="color: #4167a7; font-size: 1.5rem"
-              ></i>
-              <span
-                id="unreadCount"
-                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                style="font-size: 10px; padding: 3px 6px"
-              ></span>
-            </a>
-
-            <div class="dropdown">
-              <button
-                class="btn-user-blue dropdown-toggle"
-                type="button"
-                id="userDropdown"
-                data-bs-toggle="dropdown"
-                data-bs-auto-close="true"
-                aria-expanded="false"
-              >
-                <img
-                  src="assets/img/user.png"
-                  height="20px"
-                  style="filter: brightness(0) invert(1)"
-                  alt="User"
-                />
-                <span id="engineerNameDisplay" class="d-none d-sm-inline"
-                  >User</span
-                >
-              </button>
-
-              <ul
-                class="dropdown-menu dropdown-menu-end shadow"
-                aria-labelledby="userDropdown"
-              >
-                <li>
-                  <a class="dropdown-item" href="changePassword.html"
-                    >Change Password</a
-                  >
-                </li>
-                <li><hr class="dropdown-divider" /></li>
-                <li>
-                  <a class="dropdown-item text-danger" onclick="logout()"
-                    >Logout</a
-                  >
-                </li>
-              </ul>
-            </div>
+            <!-- Removed legacy icons -->
           </div>
         </div>
       </nav>
@@ -503,57 +430,7 @@
         </div>
       </div>
     </main>
-    <div
-      class="modal fade"
-      id="attendanceModal"
-      tabindex="-1"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h6 class="modal-title">Mark Attendance</h6>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body text-center">
-            <div
-              id="liveClock"
-              class="fs-1 fw-bold mb-3"
-              style="color: #ad283f"
-            >
-              00:00:00
-            </div>
-
-            <div class="mb-3 text-start">
-              <label class="form-label">Select Project</label>
-              <select id="projectSelect" class="form-select">
-                <option value="">-- Choose Project --</option>
-              </select>
-            </div>
-
-            <div id="attendanceStatus" class="mb-3 text-muted">
-              <p id="punchInTimeDisplay">Punch In: --:--</p>
-              <p id="punchOutTimeDisplay">Punch Out: --:--</p>
-            </div>
-
-            <div class="d-grid gap-2">
-              <button
-                id="attendanceBtn"
-                class="btn btn-success btn-lg"
-                onclick="handleAttendance()"
-              >
-                Punch In
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Attendance Modal Removed -->
     <img id="pdfLogo" src="assets/img/YDLOGO.png" style="display: none" />
 
     <footer id="footer" class="footer position-relative light-background">
@@ -563,119 +440,6 @@
             <a href="ourClients.html" class="logo d-flex align-items-center"
               ><img height="100" src="assets/img/yd-footer.png"
             /></a>
-          </div>
-          <div class="col-lg-3 col-md-3 footer-links">
-            <h4>Products</h4>
-            <ul>
-              <li>
-                <a
-                  target="_blank"
-                  href="https://www.ydgroup.com/products/cold-rolling-mills/"
-                  >Cold Rolling Mills</a
-                >
-              </li>
-              <li>
-                <a
-                  target="_blank"
-                  href="https://www.ydgroup.com/products/gi-gl-lines/"
-                  >GI/GL Lines</a
-                >
-              </li>
-              <li>
-                <a
-                  target="_blank"
-                  href="https://www.ydgroup.com/products/color-coating-lines/"
-                  >Color Coating lines</a
-                >
-              </li>
-              <li>
-                <a
-                  target="_blank"
-                  href="https://www.ydgroup.com/products/pickling-lines-acid-regeneration-plants/"
-                  >Pickling Lines & Acid Regeneration</a
-                >
-              </li>
-              <li>
-                <a
-                  target="_blank"
-                  href="https://www.ydgroup.com/products/narrow-hot-strip-mills/"
-                  >Narrow Hot Strip Mills</a
-                >
-              </li>
-              <li>
-                <a
-                  target="_blank"
-                  href="https://www.ydgroup.com/products/slitting-cut-to-length-lines/"
-                  >Slitting & Cut to Length</a
-                >
-              </li>
-              <li>
-                <a
-                  target="_blank"
-                  href="https://www.ydgroup.com/products/automatic-gauge-control/"
-                  >Automatic Gauge Control</a
-                >
-              </li>
-              <li>
-                <a
-                  target="_blank"
-                  href="https://www.ydgroup.com/products/electrical-industrial-automation-solutions/"
-                  >Electrical & Automation</a
-                >
-              </li>
-            </ul>
-          </div>
-          <div
-            class="col-lg-3 col-md-3 footer-links footer-right"
-            style="padding-left: 90px"
-          >
-            <h4>Information</h4>
-            <ul>
-              <li>
-                <a
-                  target="_blank"
-                  href="https://www.ydgroup.com/company-profile/"
-                  >Company Profile</a
-                >
-              </li>
-              <li>
-                <a
-                  target="_blank"
-                  href="https://www.ydgroup.com/infrastructure/"
-                  >Infrastructure</a
-                >
-              </li>
-              <li>
-                <a target="_blank" href="https://www.ydgroup.com/products/"
-                  >Products</a
-                >
-              </li>
-              <li>
-                <a
-                  target="_blank"
-                  href="https://www.ydgroup.com/wp-content/uploads/2024/03/3.-CSR.pdf"
-                  >CSR Policy</a
-                >
-              </li>
-              <li>
-                <a target="_blank" href="https://www.ydgroup.com/contact-us/"
-                  >Contact Us</a
-                >
-              </li>
-            </ul>
-          </div>
-          <div
-            class="col-lg-3 col-md-3 footer-links footer-right"
-            style="padding-left: 70px"
-          >
-            <h4>Get In Touch</h4>
-            <ul>
-              <li><a href="#">147-148, Sector - 58</a></li>
-              <li><a href="#">Faridabad 121004</a></li>
-              <li><a href="#">Haryana, India</a></li>
-              <li><a href="tel:-+91 129 429 5200">+91 129 429 5200</a></li>
-              <li><a href="mailto:sales@ydgroup.com">sales@ydgroup.com</a></li>
-            </ul>
           </div>
         </div>
       </div>
@@ -688,11 +452,9 @@
       </div>
     </footer>
     <script src="assets/js/config.js"></script>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="assets/vendor/aos/aos.js"></script>
     <script src="assets/js/main.js"></script>
-    <script src="assets/js/attendance.js"></script>
 
     <script>
       let database = [];
