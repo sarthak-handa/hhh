@@ -784,113 +784,9 @@
           plugins: { tooltip: { padding: 12, cornerRadius: 8, bodyFont: { size: 13 }, titleFont: { size: 14, weight: 'bold' } } }
         };
 
-        // --- Custom Connector Line Plugin (Straws) ---
-        const pieOutlabelPlugin = {
-          id: 'pieOutlabels',
-          afterDraw(chart) {
-            if (chart.config.type !== 'pie' && chart.config.type !== 'doughnut') return;
-            const { ctx, chartArea } = chart;
-            const meta = chart.getDatasetMeta(0);
-            if (!meta || !meta.data || meta.data.length === 0) return;
+        // Custom outlabel plugin removed per user request to revert to standard doughnut
 
-            const centerX = (chartArea.left + chartArea.right) / 2;
-            const centerY = (chartArea.top + chartArea.bottom) / 2;
-            const LABEL_HEIGHT = 16; 
 
-            const items = [];
-            meta.data.forEach((arc, i) => {
-              const data = chart.data.datasets[0].data[i];
-              if (!data || data === 0) return;
-              const valCr = (data / 10000000).toFixed(2);
-              const midAngle = (arc.startAngle + arc.endAngle) / 2;
-              const outerRadius = arc.outerRadius;
-              const edgeX = centerX + Math.cos(midAngle) * outerRadius;
-              const edgeY = centerY + Math.sin(midAngle) * outerRadius;
-              const isRight = Math.cos(midAngle) >= 0;
-
-              items.push({
-                valCr, midAngle, edgeX, edgeY, isRight,
-                targetY: edgeY,
-                color: chart.data.datasets[0].backgroundColor[i]
-              });
-            });
-
-            const leftItems = items.filter(d => !d.isRight).sort((a, b) => a.targetY - b.targetY);
-            const rightItems = items.filter(d => d.isRight).sort((a, b) => a.targetY - b.targetY);
-
-            function resolveOverlaps(group) {
-              if (group.length === 0) return;
-              // Forward pass
-              for (let i = 1; i < group.length; i++) {
-                if (group[i].targetY - group[i - 1].targetY < LABEL_HEIGHT) {
-                  group[i].targetY = group[i - 1].targetY + LABEL_HEIGHT;
-                }
-              }
-              // Backward pass (if overflow bottom)
-              const maxY = chartArea.bottom;
-              if (group[group.length - 1].targetY > maxY) {
-                let overflow = group[group.length - 1].targetY - maxY;
-                for (let i = group.length - 1; i >= 0; i--) {
-                  group[i].targetY -= overflow;
-                  if (i > 0 && group[i].targetY - group[i - 1].targetY < LABEL_HEIGHT) {
-                     overflow = LABEL_HEIGHT - (group[i].targetY - group[i - 1].targetY);
-                  } else {
-                     overflow = 0;
-                  }
-                }
-              }
-              // Forward pass (if overflow top)
-              const minY = chartArea.top;
-              if (group[0].targetY < minY) {
-                let overflow = minY - group[0].targetY;
-                for (let i = 0; i < group.length; i++) {
-                  group[i].targetY += overflow;
-                  if (i < group.length - 1 && group[i + 1].targetY - group[i].targetY < LABEL_HEIGHT) {
-                    overflow = LABEL_HEIGHT - (group[i + 1].targetY - group[i].targetY);
-                  } else {
-                    overflow = 0;
-                  }
-                }
-              }
-            }
-
-            resolveOverlaps(leftItems);
-            resolveOverlaps(rightItems);
-
-            const rightEdgeX = chartArea.right - 80;
-            const leftEdgeX = chartArea.left + 50;
-
-            items.forEach((item) => {
-              const { valCr, edgeX, edgeY, isRight, targetY, color } = item;
-              const elbowLen = 12;
-              const elbowX = edgeX + (isRight ? elbowLen : -elbowLen);
-              const elbowY = targetY;
-              const endX = isRight ? rightEdgeX - 25 : leftEdgeX + 25;
-
-              ctx.save();
-              ctx.beginPath();
-              ctx.moveTo(edgeX, edgeY);
-              ctx.lineTo(elbowX, elbowY);
-              ctx.lineTo(endX, elbowY);
-              ctx.strokeStyle = '#d1d5db';
-              ctx.lineWidth = 1.5;
-              ctx.stroke();
-
-              ctx.beginPath();
-              ctx.arc(edgeX, edgeY, 3, 0, Math.PI * 2);
-              ctx.fillStyle = color || '#9ca3af';
-              ctx.fill();
-
-              const textX = isRight ? endX + 6 : endX - 6;
-              ctx.textAlign = isRight ? 'left' : 'right';
-              ctx.textBaseline = 'middle';
-              ctx.font = 'bold 11px Inter, sans-serif';
-              ctx.fillStyle = '#4b5563';
-              ctx.fillText(valCr, textX, elbowY);
-              ctx.restore();
-            });
-          }
-        };
 
         // 1. BAR CHART
         const ctxBar = document.getElementById("barChart").getContext("2d");
@@ -940,9 +836,9 @@
         // 2. PIE CHART
         const ctxPie = document.getElementById("pieChart").getContext("2d");
         charts.pie = new Chart(ctxPie, {
-          type: "pie",
+          type: "doughnut",
           data: { labels: [], datasets: [] },
-          plugins: [ChartDataLabels, pieOutlabelPlugin],
+          plugins: [ChartDataLabels],
           options: {
             ...commonOpts,
             layout: { padding: 30 },
@@ -1064,10 +960,19 @@
           const prodData = groupBy(baseData, "product");
           const prodHighlightSet = new Set(highlightData.map((d) => d.product));
 
+          charts.pie.options.cutout = "50%";
           charts.pie.options.layout.padding = 30;
           charts.pie.options.plugins.legend.display = true;
-          // Hide standard datalabels in favor of our custom straw plugin
-          charts.pie.options.plugins.datalabels = { display: false };
+          
+          charts.pie.options.plugins.datalabels = {
+            display: true,
+            color: "#333",
+            anchor: "end",
+            align: "end",
+            offset: 5,
+            font: { weight: "bold", size: 10 },
+            formatter: (val) => (val / 10000000).toFixed(2),
+          };
 
           charts.pie.data.labels = Object.keys(prodData);
           charts.pie.data.datasets = [
