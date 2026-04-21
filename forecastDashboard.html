@@ -1,0 +1,1923 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>YD PROJECTS</title>
+    <link href="assets/img/yd-favicon.png" rel="icon" />
+    <link
+      href="assets/vendor/bootstrap/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link href="assets/vendor/aos/aos.css" rel="stylesheet" />
+    <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <link href="assets/css/main.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* --- LOADER CSS FIXED (New Spinner) --- */
+      #loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #ffffff;
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: opacity 0.3s ease-out;
+      }
+
+      /* Simple, responsive CSS Spinner */
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3; /* Light grey */
+        border-top: 5px solid #a81818; /* Yogi Red Brand Color */
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .hidden-loader {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .userImg {
+        height: 20px !important;
+      }
+      :root {
+        --brand-red: #a81818;
+        --brand-pink: #fca5a5;
+        --brand-dark: #1f2937;
+      }
+      body {
+        background-color: #f3f4f6;
+      }
+      .custom-scroll::-webkit-scrollbar {
+        height: 6px;
+        width: 6px;
+      }
+      .custom-scroll::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+      .custom-scroll::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+      }
+      .kpi-card {
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+      .kpi-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      }
+      .expand-row {
+        animation: slideDown 0.3s ease-out forwards;
+        transform-origin: top;
+      }
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: scaleY(0);
+          max-height: 0;
+        }
+        to {
+          opacity: 1;
+          transform: scaleY(1);
+        }
+      }
+      .custom-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      .danger-badge {
+        background-color: red;
+        color: white;
+        padding: 4px 8px;
+        text-align: center;
+        border-radius: 5px;
+      }
+      .success-badge {
+        background-color: green;
+        color: white;
+        padding: 4px 8px;
+        text-align: center;
+        border-radius: 5px;
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              yogi: { red: "#a81818", pink: "#fca5a5", dark: "#1f2937" },
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="text-gray-800">
+    <div id="loader">
+      <div class="spinner"></div>
+    </div>
+
+    <header
+      id="header"
+      class="header sticky-top"
+      style="
+        background-color: #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 10px 0;
+      "
+    >
+      <nav class="navbar navbar-light">
+        <div class="container-fluid d-flex flex-wrap align-items-center">
+          <a class="navbar-brand" href="ourClients.html">
+            <img src="assets/img/YDLOGO.png" alt="Logo" style="height: 45px" />
+          </a>
+
+          <div class="custom-nav-container">
+            <a
+              href="projectReport.html"
+              class="nav-btn-custom"
+              style="background: #fde2e4; color: #9f1239"
+            >
+              Report
+            </a>
+            <a
+              href="meetings.html"
+              class="nav-btn-custom"
+              style="background: #fff4cc; color: #92400e"
+            >
+              Meeting
+            </a>
+            <a
+              href="#"
+              class="nav-btn-custom"
+              style="background: #e0f2fe; color: #0369a1"
+              data-bs-toggle="modal"
+              data-bs-target="#attendanceModal"
+            >
+              Attendance
+            </a>
+          </div>
+
+          <div class="right-icons-group">
+            <a
+              href="ourClients.html"
+              class="position-relative text-decoration-none"
+            >
+              <i
+                class="fa-solid fa-bell fa-lg"
+                style="color: #4167a7; font-size: 1.5rem"
+              ></i>
+              <span
+                id="unreadCount"
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                style="font-size: 10px; padding: 3px 6px"
+              ></span>
+            </a>
+
+            <div class="dropdown">
+              <button
+                class="btn-user-blue dropdown-toggle"
+                type="button"
+                id="userDropdown"
+                data-bs-toggle="dropdown"
+                data-bs-auto-close="true"
+                aria-expanded="false"
+              >
+                <img
+                  src="assets/img/user.png"
+                  height="20px"
+                  style="filter: brightness(0) invert(1)"
+                  alt="User"
+                />
+                <span id="engineerNameDisplay" class="d-none d-sm-inline"
+                  >User</span
+                >
+              </button>
+
+              <ul
+                class="dropdown-menu dropdown-menu-end shadow"
+                aria-labelledby="userDropdown"
+              >
+                <li>
+                  <a class="dropdown-item" href="changePassword.html"
+                    >Change Password</a
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item text-danger" onclick="logout()"
+                    >Logout</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="px-4 sm:px-6 lg:px-8 py-6" style="margin: 0px">
+      <div
+        class="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-6 gap-4"
+      >
+        <div>
+          <div class="mb-2">
+            <h1
+              class="text-3xl font-bold text-gray-900 uppercase"
+              style="color: #a81818"
+            >
+              Sales & Cash Flow <span id="fy"></span>
+              <span id="monthRange" class="text-xl text-gray-600 ml-1"></span>
+            </h1>
+
+            <a
+              id="excelUpdateTimeDiv"
+              href="https://ydgrouppl.sharepoint.com/:x:/s/SalesForecast/IQAqwJw0nEVdSJiebL0rGJ4uAa6Rwn6fMdHM6r_g_PRJVuM?wdOrigin=TEAMS-MAGLEV.p2p_ns.rwc&wdExp=TEAMS-TREATMENT&wdhostclicktime=1769663415121&web=1"
+              target="_blank"
+              ><small id="excelUpdateTime"></small
+            ></a>
+            <a
+              id="excelUpdateTimeDiv2"
+              style="display: none"
+              href="https://ydgrouppl.sharepoint.com/:x:/s/SalesForecast/IQA8foYHguqjRJP0QhZ3HO-lAUwt2jC8tpiatYX1uld0gpk?wdOrigin=TEAMS-MAGLEV.p2p_ns.rwc&wdExp=TEAMS-TREATMENT&wdhostclicktime=1769664603609&web=1"
+              target="_blank"
+              ><small id="excelUpdateTime2"></small
+            ></a>
+          </div>
+          <div
+            class="flex bg-white p-1 rounded-lg shadow-sm border border-gray-200 w-fit"
+          >
+            <button
+              id="toggle-forecast"
+              onclick="switchDataContext('forecast')"
+              class="px-4 py-2 text-sm font-bold rounded-md transition-all duration-200 bg-yogi-red text-white"
+            >
+              FORECAST
+            </button>
+            <button
+              id="toggle-actuals"
+              onclick="switchDataContext('actuals')"
+              class="px-4 py-2 text-sm font-bold rounded-md transition-all duration-200 text-gray-500 hover:text-gray-700"
+            >
+              REVENUE
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="flex flex-wrap gap-3 w-full xl:w-auto justify-end bg-white p-3 rounded-lg shadow-sm border border-gray-100"
+        >
+          <div class="flex flex-col" id="dispatch-status-container">
+            <label
+              class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1"
+              >All Statuses</label
+            >
+            <select
+              id="filter-status"
+              onchange="applySlicer('status', this.value)"
+              class="custom-select bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-md focus:ring-yogi-red focus:border-yogi-red block w-40 p-2"
+            >
+              <option value="all">All Statuses</option>
+              <option value="BOI">BOI</option>
+              <option value="Inhouse">Inhouse</option>
+              <option value="Dispatched">Dispatched</option>
+              <option value="Not Dispatched">Not Dispatched</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col relative">
+            <label
+              class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1"
+              >Dispatch Month</label
+            >
+            <button
+              id="monthDropdownBtn"
+              onclick="toggleMonthDropdown()"
+              class="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-md focus:ring-yogi-red focus:border-yogi-red block w-40 p-2 text-left flex justify-between items-center"
+            >
+              <span id="monthBtnText">All Months</span>
+              <i class="fa-solid fa-chevron-down text-xs text-gray-500"></i>
+            </button>
+            <div
+              id="monthDropdownList"
+              class="hidden absolute top-[60px] z-50 w-48 bg-white shadow-lg border border-gray-200 rounded-md max-h-60 overflow-y-auto"
+            ></div>
+          </div>
+          <div class="flex items-end">
+            <button
+              onclick="resetAllFilters()"
+              class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-md text-sm font-medium transition h-[38px] flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              Reset
+            </button>
+          </div>
+          <div class="flex items-end">
+            <button
+              onclick="generateRankedMonthPDF()"
+              class="bg-yogi-red hover:bg-red-800 text-white px-4 py-2 rounded-md text-sm font-medium transition h-[38px] flex items-center gap-2 shadow-sm"
+            >
+              <i class="fa-solid fa-file-pdf"></i> Export Report
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div
+          class="kpi-card bg-white p-5 rounded-lg border-l-4 border-yogi-red shadow-sm"
+        >
+          <p class="text-xs font-bold text-gray-400 uppercase">PROJECTS</p>
+          <h3 id="kpi-projects" class="text-2xl font-bold text-gray-900 mt-1">
+            0
+          </h3>
+        </div>
+        <div
+          class="kpi-card bg-white p-5 rounded-lg border-l-4 border-yogi-red shadow-sm"
+          id="billingHead"
+        >
+          <p class="text-xs font-bold text-gray-400 uppercase">
+            FORECASTED BILLING VALUE
+          </p>
+          <h3 id="kpi-revenue" class="text-2xl font-bold text-gray-900 mt-1">
+            0
+          </h3>
+        </div>
+        <div
+          class="kpi-card bg-white p-5 rounded-lg border-l-4 border-yogi-red shadow-sm"
+          id="assemblyHead"
+        >
+          <p class="text-xs font-bold text-gray-400 uppercase">
+            ASSEMBLIES TO BE DISPATCHED
+          </p>
+          <h3 id="kpi-assemblies" class="text-2xl font-bold text-gray-900 mt-1">
+            0
+          </h3>
+        </div>
+        <div
+          class="kpi-card bg-white p-5 rounded-lg border-l-4 border-yogi-red shadow-sm"
+          id="avgMonthlyHead"
+        >
+          <p class="text-xs font-bold text-gray-400 uppercase">
+            FORECASTED AVG MONTHLY BILLING
+          </p>
+          <h3 id="kpi-avg" class="text-2xl font-bold text-gray-900 mt-1">0</h3>
+        </div>
+      </div>
+      <div id="active-filters-container" class="flex gap-2 mb-4 hidden"></div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+        <div
+          class="bg-white p-4 rounded-lg shadow-sm lg:col-span-4 border border-gray-100"
+          id="col-bar"
+        >
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-sm font-bold text-gray-800">
+              FORECASTED BILLING ALLOCATION
+            </h3>
+          </div>
+          <div class="h-60 relative w-full">
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+        <div
+          class="bg-white p-4 rounded-lg shadow-sm lg:col-span-4 border border-gray-100"
+          id="col-pie"
+        >
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-sm font-bold text-gray-800">
+              FORECASTED BILLING BY PRODUCTION LINE
+            </h3>
+          </div>
+          <div class="h-60 relative w-full flex justify-center">
+            <canvas id="pieChart"></canvas>
+          </div>
+        </div>
+        <div
+          class="bg-white p-4 rounded-lg shadow-sm lg:col-span-4 border border-gray-100"
+          id="col-line"
+        >
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-sm font-bold text-gray-800">
+              FORECASTED MONTHLY BILLING
+            </h3>
+          </div>
+          <div class="h-60 relative w-full">
+            <canvas id="lineChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+      >
+        <div
+          class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center"
+        >
+          <h3 class="font-bold text-gray-800">Detailed Assemblies Value</h3>
+          <span
+            id="table-count"
+            class="text-xs font-semibold text-yogi-red bg-red-50 px-2 py-1 rounded"
+            >Loading...</span
+          >
+        </div>
+        <div class="overflow-x-auto custom-scroll">
+          <table class="w-full text-sm text-left">
+            <thead
+              class="bg-gray-100 text-xs uppercase text-gray-500 sticky top-0 z-10"
+            >
+              <tr>
+                <th class="px-6 py-3 border-b border-gray-200 w-12"></th>
+                <th class="px-6 py-3 border-b border-gray-200">Project Name</th>
+                <th class="px-6 py-3 border-b border-gray-200">Manager</th>
+                <th
+                  class="px-6 py-3 border-b border-gray-200 text-right cursor-pointer select-none"
+                  onclick="toggleBillingSort()"
+                >
+                  Billing (₹)
+                  <span id="billingSortIcon" class="ml-1 text-xs">▼</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="table-body" class="divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+    <div
+      class="modal fade"
+      id="attendanceModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h6 class="modal-title">Mark Attendance</h6>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body text-center">
+            <div
+              id="liveClock"
+              class="fs-1 fw-bold mb-3"
+              style="color: #ad283f"
+            >
+              00:00:00
+            </div>
+
+            <div class="mb-3 text-start">
+              <label class="form-label">Select Project</label>
+              <select id="projectSelect" class="form-select">
+                <option value="">-- Choose Project --</option>
+              </select>
+            </div>
+
+            <div id="attendanceStatus" class="mb-3 text-muted">
+              <p id="punchInTimeDisplay">Punch In: --:--</p>
+              <p id="punchOutTimeDisplay">Punch Out: --:--</p>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button
+                id="attendanceBtn"
+                class="btn btn-success btn-lg"
+                onclick="handleAttendance()"
+              >
+                Punch In
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <img id="pdfLogo" src="assets/img/YDLOGO.png" style="display: none" />
+
+    <footer id="footer" class="footer position-relative light-background">
+      <div class="container-fluid footer-top">
+        <div class="row gy-4" style="padding-left: 50px">
+          <div class="col-lg-3 col-md-3 footer-about">
+            <a href="ourClients.html" class="logo d-flex align-items-center"
+              ><img height="100" src="assets/img/yd-footer.png"
+            /></a>
+          </div>
+          <div class="col-lg-3 col-md-3 footer-links">
+            <h4>Products</h4>
+            <ul>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://www.ydgroup.com/products/cold-rolling-mills/"
+                  >Cold Rolling Mills</a
+                >
+              </li>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://www.ydgroup.com/products/gi-gl-lines/"
+                  >GI/GL Lines</a
+                >
+              </li>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://www.ydgroup.com/products/color-coating-lines/"
+                  >Color Coating lines</a
+                >
+              </li>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://www.ydgroup.com/products/pickling-lines-acid-regeneration-plants/"
+                  >Pickling Lines & Acid Regeneration</a
+                >
+              </li>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://www.ydgroup.com/products/narrow-hot-strip-mills/"
+                  >Narrow Hot Strip Mills</a
+                >
+              </li>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://www.ydgroup.com/products/slitting-cut-to-length-lines/"
+                  >Slitting & Cut to Length</a
+                >
+              </li>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://www.ydgroup.com/products/automatic-gauge-control/"
+                  >Automatic Gauge Control</a
+                >
+              </li>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://www.ydgroup.com/products/electrical-industrial-automation-solutions/"
+                  >Electrical & Automation</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div
+            class="col-lg-3 col-md-3 footer-links footer-right"
+            style="padding-left: 90px"
+          >
+            <h4>Information</h4>
+            <ul>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://www.ydgroup.com/company-profile/"
+                  >Company Profile</a
+                >
+              </li>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://www.ydgroup.com/infrastructure/"
+                  >Infrastructure</a
+                >
+              </li>
+              <li>
+                <a target="_blank" href="https://www.ydgroup.com/products/"
+                  >Products</a
+                >
+              </li>
+              <li>
+                <a
+                  target="_blank"
+                  href="https://www.ydgroup.com/wp-content/uploads/2024/03/3.-CSR.pdf"
+                  >CSR Policy</a
+                >
+              </li>
+              <li>
+                <a target="_blank" href="https://www.ydgroup.com/contact-us/"
+                  >Contact Us</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div
+            class="col-lg-3 col-md-3 footer-links footer-right"
+            style="padding-left: 70px"
+          >
+            <h4>Get In Touch</h4>
+            <ul>
+              <li><a href="#">147-148, Sector - 58</a></li>
+              <li><a href="#">Faridabad 121004</a></li>
+              <li><a href="#">Haryana, India</a></li>
+              <li><a href="tel:-+91 129 429 5200">+91 129 429 5200</a></li>
+              <li><a href="mailto:sales@ydgroup.com">sales@ydgroup.com</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="container copyright text-center">
+        <p>
+          © <span>Copyright</span>
+          <strong class="px-1 sitename">YOGIJI DIGI</strong>
+          <span>All Rights Reserved</span>
+        </p>
+      </div>
+    </footer>
+    <script src="assets/js/config.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="assets/vendor/aos/aos.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/attendance.js"></script>
+
+    <script>
+      let database = [];
+      const loader = document.getElementById("loader");
+      function changeAssemblySort(mode) {
+        state.assemblySort = mode;
+        updateDashboard(); // Trigger re-render to apply sort
+      }
+
+      // --- 1. DATA LOADING & PARSING ---
+      async function loadDashboardData() {
+        loader.classList.remove("hidden-loader");
+
+        const monthSet = new Set();
+        const MONTH_ORDER = [
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+          "Jan",
+          "Feb",
+          "Mar",
+        ];
+
+        const endpoint =
+          state.context === "forecast"
+            ? `${API_URL}/excel/forecast/dashboard`
+            : `${API_URL}/excel/actuals/dashboard`;
+
+        try {
+          const res = await fetch(endpoint, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+
+          if (res.status === 401) {
+            handleUnauthorized?.("Unauthorized");
+            return;
+          }
+          if (!res.ok) throw new Error("Fetch failed");
+
+          const dbExcel = await res.json();
+          // Uncomment below to see the actual keys if needed in DevTools
+          // console.log("Excel row keys:", Object.keys(dbExcel.data[0]));
+
+          document.getElementById("fy").innerText = "FY " + dbExcel.fiscalYear;
+
+          const formatDate = (iso) => {
+            if (!iso) return "";
+            const d = new Date(iso);
+            const pad = (n) => String(n).padStart(2, "0");
+            return `${pad(d.getDate())}-${pad(
+              d.getMonth() + 1,
+            )}-${d.getFullYear()}`;
+          };
+          // const updatedDate = formatDate(dbExcel.lastUpdated);
+          if (state.context === "forecast") {
+            // $("#excelUpdateTimeDiv").show();
+            // $("#excelUpdateTimeDiv2").hide();
+            document.getElementById("excelUpdateTimeDiv").style.display =
+              "block";
+            document.getElementById("excelUpdateTimeDiv2").style.display =
+              "none";
+          } else {
+            // $("#excelUpdateTimeDiv2").show();
+            // $("#excelUpdateTimeDiv").hide();
+            document.getElementById("excelUpdateTimeDiv2").style.display =
+              "block";
+            document.getElementById("excelUpdateTimeDiv").style.display =
+              "none";
+          }
+          const updatedDate = dateNtime(dbExcel.lastUpdated);
+          document.getElementById("excelUpdateTime").innerText =
+            "(last updated at " + updatedDate + ")";
+          document.getElementById("excelUpdateTime2").innerText =
+            "(last updated at " + updatedDate + ")";
+          database = dbExcel.data.map((item, index) => {
+            if (item.month) monthSet.add(item.month);
+            const rawVal = String(item.billing || 0).replace(/[^0-9.-]/g, "");
+            const val = parseFloat(rawVal) || 0;
+
+            // --- UPDATED LOGIC: Handle "Disp." and "Not Disp." from Col H ---
+            let status = "Not Dispatched";
+            if (item.status) {
+              const s = item.status.toLowerCase();
+              if (s.includes("not disp")) {
+                status = "Not Dispatched";
+              } else if (s.includes("disp")) {
+                status = "Dispatched";
+              } else if (s.includes("hold")) {
+                status = "Hold";
+              }
+            }
+
+            // --- UPDATED LOGIC: Map Column B (Robust Fuzzy Lookup) ---
+            // Handles concatenated strings or dirty data as requested
+            const rawLine = (
+              item.line ||
+              item.manufacturing ||
+              item.boi_manufacturing ||
+              item["BOI /MANUFACTURING"] ||
+              ""
+            )
+              .toString()
+              .replace(/\s+/g, "") // Remove spaces
+              .toUpperCase();
+
+            let source = "";
+            // Priority Check: As requested, use includes/regex
+            if (rawLine.includes("BOI")) {
+              source = "BOI";
+            } else if (/UNIT-?[123]/.test(rawLine)) {
+              source = "Inhouse";
+            }
+
+            return {
+              id: index + 1,
+              name: item.project,
+              pm: item.pm,
+              product: item.category,
+              month: item.month ? item.month.trim() : "",
+              status: status, // mapped status from Col H
+              source: source, // mapped source from Col B
+              val: val,
+              date: formatDate(item.dispatchMonth),
+              context: state.context,
+              assembly: item.assembly,
+              line: item.line,
+              year: formatDate(item.dispatchMonth).split("-")[2],
+            };
+          });
+
+          // --- CALCULATE DATE RANGE AND UPDATE HEADING ---
+          const distinctMonths = [...monthSet].sort(
+            (a, b) => MONTH_ORDER.indexOf(a) - MONTH_ORDER.indexOf(b),
+          );
+
+          // Build string like "(Apr-Jan)"
+          let rangeText = "";
+          if (distinctMonths.length > 0) {
+            const first = distinctMonths[0];
+            const last = distinctMonths[distinctMonths.length - 1];
+            rangeText =
+              distinctMonths.length === 1 ? `(${first})` : `(${first}-${last})`;
+          }
+          // Update the new span
+          const monthRangeSpan = document.getElementById("monthRange");
+          if (monthRangeSpan) {
+            monthRangeSpan.innerText = rangeText;
+          }
+
+          populateMonthFilter(distinctMonths);
+          updateDashboard();
+        } catch (err) {
+          console.error("Data load failed:", err);
+        } finally {
+          loader.classList.add("hidden-loader");
+        }
+      }
+
+      // --- 2. STATE MANAGEMENT ---
+      let state = {
+        context: "forecast",
+        filters: { month: [], status: null },
+        selection: { pm: null, product: null, month: null },
+        expandedRows: [],
+        sort: { key: "billing", direction: "desc" },
+        assemblySort: "default",
+      };
+
+      const charts = {};
+
+      function init() {
+        initCharts();
+        loadDashboardData();
+      }
+
+      function switchDataContext(context) {
+        if (state.context === context) return;
+        state.context = context;
+
+        // --- BUTTON STYLES ---
+        const forBtn = document.getElementById("toggle-forecast");
+        const actBtn = document.getElementById("toggle-actuals");
+        const statusContainer = document.getElementById(
+          "dispatch-status-container",
+        );
+
+        if (context === "forecast") {
+          statusContainer.style.display = "flex";
+          forBtn.className =
+            "px-4 py-1.5 text-xs font-bold rounded bg-yogi-red text-white shadow-sm";
+          actBtn.className =
+            "px-4 py-1.5 text-xs font-bold rounded text-gray-500 hover:text-gray-700";
+        } else {
+          statusContainer.style.display = "none";
+          actBtn.className =
+            "px-4 py-1.5 text-xs font-bold rounded bg-yogi-red text-white shadow-sm";
+          forBtn.className =
+            "px-4 py-1.5 text-xs font-bold rounded text-gray-500 hover:text-gray-700";
+          state.filters.status = null;
+          document.getElementById("filter-status").value = "all";
+        }
+
+        // --- GRID LAYOUT ---
+        const colBar = document.getElementById("col-bar");
+        const colPie = document.getElementById("col-pie");
+        const colLine = document.getElementById("col-line");
+
+        colPie.classList.remove("lg:col-span-4", "lg:col-span-3");
+        colLine.classList.remove("lg:col-span-4", "lg:col-span-5");
+
+        if (context === "forecast") {
+          colPie.classList.add("lg:col-span-4");
+          colLine.classList.add("lg:col-span-4");
+        } else {
+          colPie.classList.add("lg:col-span-3");
+          colLine.classList.add("lg:col-span-5");
+        }
+
+        setTimeout(() => {
+          if (charts.bar) charts.bar.resize();
+          if (charts.pie) charts.pie.resize();
+          if (charts.line) charts.line.resize();
+        }, 50);
+
+        updateLabels(context);
+        loadDashboardData();
+      }
+
+      function updateLabels(context) {
+        const barTitle = document.querySelector("#col-bar h3");
+        const pieTitle = document.querySelector("#col-pie h3");
+        const lineTitle = document.querySelector("#col-line h3");
+
+        const billingHead = document.querySelector("#billingHead p");
+        const assemblyHead = document.querySelector("#assemblyHead p");
+        const avgMonthlyHead = document.querySelector("#avgMonthlyHead p");
+
+        if (context === "forecast") {
+          if (billingHead) billingHead.innerText = "FORECASTED BILLING VALUE";
+          if (assemblyHead)
+            assemblyHead.innerText = "ASSEMBLIES TO BE DISPATCHED";
+          if (avgMonthlyHead)
+            avgMonthlyHead.innerText = "AVERAGE MONTHLY FORECAST";
+
+          if (barTitle) barTitle.innerText = "FORECASTED BILLING ALLOCATION";
+          if (pieTitle)
+            pieTitle.innerText = "FORECASTED BILLING BY PRODUCTION LINE";
+          if (lineTitle) lineTitle.innerText = "FORECASTED MONTHLY BILLING";
+        } else {
+          if (billingHead) billingHead.innerText = "ACTUAL BILLING VALUE";
+          if (assemblyHead) assemblyHead.innerText = "ASSEMBLIES DISPATCHED";
+          if (avgMonthlyHead)
+            avgMonthlyHead.innerText = "AVERAGE MONTHLY BILLING";
+
+          if (barTitle) barTitle.innerText = "REVENUE BY PROJECT MANAGER";
+          if (pieTitle)
+            pieTitle.innerText = "ASSEMBLIES DISPATCHED DISTRIBUTION";
+          if (lineTitle) lineTitle.innerText = "MONTHLY REVENUE";
+        }
+      }
+
+      // --- 3. FILTERING LOGIC ---
+      function getData(mode = "highlight") {
+        return database.filter((row) => {
+          // --- UPDATED SMART FILTER LOGIC ---
+          if (state.filters.status) {
+            const filterVal = state.filters.status;
+
+            // If selected value is a Status (from Col H)
+            if (["Dispatched", "Not Dispatched", "Hold"].includes(filterVal)) {
+              if (row.status !== filterVal) return false;
+            }
+            // If selected value is a Source (from Col B)
+            else if (["BOI", "Inhouse"].includes(filterVal)) {
+              if (row.source !== filterVal) return false;
+            }
+          }
+
+          if (
+            state.filters.month.length > 0 &&
+            !state.filters.month.includes(row.month)
+          )
+            return false;
+          if (mode === "highlight") {
+            if (state.selection.pm && row.pm !== state.selection.pm)
+              return false;
+            if (
+              state.selection.product &&
+              row.product !== state.selection.product
+            )
+              return false;
+            if (state.selection.month && row.month !== state.selection.month)
+              return false;
+          }
+          return true;
+        });
+      }
+
+      // --- 🔴 UPDATED: RESET CHART SELECTION ON DROPDOWN CHANGE ---
+      function applySlicer(type, value) {
+        state.filters[type] = value === "all" ? null : value;
+        // 🔴 FIX: Clear chart selections so the dropdown applies globally
+        state.selection = { pm: null, product: null, month: null };
+        updateDashboard();
+      }
+
+      function applyChartFilter(type, value) {
+        state.selection[type] = state.selection[type] === value ? null : value;
+        updateDashboard();
+      }
+
+      function resetAllFilters() {
+        state.filters = { month: [], status: null };
+        state.selection = { pm: null, product: null, month: null };
+        document.getElementById("filter-status").value = "all";
+        document.getElementById("monthBtnText").innerText = "All Months";
+        document
+          .querySelectorAll("#monthDropdownList input")
+          .forEach((cb) => (cb.checked = false));
+        updateDashboard();
+      }
+
+      // --- 4. DASHBOARD UPDATES ---
+      function updateDashboard() {
+        const baseData = getData("base");
+        const highlightData = getData("highlight");
+        const hasSelection =
+          state.selection.pm ||
+          state.selection.product ||
+          state.selection.month;
+        const activeData = hasSelection ? highlightData : baseData;
+
+        updateKPIs(activeData);
+        updateVisuals(baseData, highlightData, hasSelection);
+        renderTable(activeData);
+        updateFilterChips();
+      }
+
+      function updateKPIs(data) {
+        const totalVal = data.reduce((sum, d) => sum + d.val, 0);
+        const totalProj = new Set(data.map((d) => d.name)).size;
+        const totalAssm = data.filter(
+          (d) => d.assembly && d.assembly.trim() !== "",
+        ).length;
+        const distMonthCount = new Set(data.map((d) => d.month)).size;
+
+        document.getElementById("kpi-projects").innerText = totalProj;
+        document.getElementById("kpi-revenue").innerText =
+          "₹ " +
+          (totalVal / 10000000).toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }) +
+          " Cr";
+        document.getElementById("kpi-assemblies").innerText = totalAssm;
+
+        const avg =
+          distMonthCount > 0 ? totalVal / 10000000 / distMonthCount : 0;
+        document.getElementById("kpi-avg").innerText =
+          "₹ " +
+          avg.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }) +
+          " Cr";
+      }
+
+      // --- CHART INITIALIZATION (FIXED ROTATION HERE) ---
+      function initCharts() {
+        Chart.register(ChartDataLabels);
+        const commonOpts = {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 400 },
+        };
+
+        // 1. BAR CHART
+        const ctxBar = document.getElementById("barChart").getContext("2d");
+        charts.bar = new Chart(ctxBar, {
+          type: "bar",
+          data: { labels: [], datasets: [] },
+          plugins: [ChartDataLabels],
+          options: {
+            ...commonOpts,
+            layout: { padding: { top: 20 } },
+            plugins: {
+              legend: { display: false },
+              datalabels: {
+                anchor: "end",
+                align: "top",
+                color: "#666",
+                font: { weight: "bold", size: 10 },
+                formatter: (val) => val,
+              },
+            },
+            onClick: (e, els) => {
+              if (els.length)
+                applyChartFilter("pm", charts.bar.data.labels[els[0].index]);
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: "Value ( in ₹ Cr.)",
+                  font: { weight: "bold" },
+                },
+              },
+              x: {
+                grid: { display: false },
+                ticks: {
+                  autoSkip: false,
+                  maxRotation: 45,
+                  minRotation: 20,
+                  font: { size: 10, weight: "bold" },
+                },
+              },
+            },
+          },
+        });
+
+        // 2. PIE CHART
+        const ctxPie = document.getElementById("pieChart").getContext("2d");
+        charts.pie = new Chart(ctxPie, {
+          type: "doughnut",
+          data: { labels: [], datasets: [] },
+          plugins: [ChartDataLabels],
+          options: {
+            ...commonOpts,
+            layout: { padding: 40 },
+            plugins: {
+              legend: { position: "right" },
+            },
+            onClick: (e, els) => {
+              if (els.length)
+                applyChartFilter(
+                  "product",
+                  charts.pie.data.labels[els[0].index],
+                );
+            },
+          },
+        });
+
+        // 3. LINE CHART
+        const ctxLine = document.getElementById("lineChart").getContext("2d");
+        charts.line = new Chart(ctxLine, {
+          type: "line",
+          data: { labels: [], datasets: [] },
+          plugins: [ChartDataLabels],
+          options: {
+            ...commonOpts,
+            layout: { padding: { top: 20, right: 20 } },
+            plugins: {
+              legend: { display: false },
+              datalabels: {
+                display: true,
+                align: "top",
+                offset: 5,
+                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                borderRadius: 3,
+                padding: 4,
+                font: { size: 10, weight: "bold" },
+                formatter: (val) => val + " Cr",
+              },
+            },
+            scales: {
+              y: {
+                display: true,
+                title: {
+                  display: true,
+                  text: "Value ( in ₹ Cr.)",
+                  font: { weight: "bold" },
+                },
+                grid: { color: "#f3f4f6" },
+              },
+              x: { grid: { display: false } },
+            },
+            onClick: (e, els) => {
+              if (els.length)
+                applyChartFilter(
+                  "month",
+                  charts.line.data.labels[els[0].index],
+                );
+            },
+          },
+        });
+      }
+
+      // --- CHART DATA UPDATES ---
+      // --- CHART DATA UPDATES ---
+      // --- CHART DATA UPDATES ---
+      function updateVisuals(baseData, highlightData, hasSelection) {
+        const colors = {
+          red: "#a81818",
+          pink: "#fca5a5",
+          gray: "#e5e7eb",
+          // UPDATED: Specific palette for the Pie Chart
+          pieBase: [
+            "#B02A37",
+            "#2E4F6E",
+            "#8C1D2D",
+            "#6C757D",
+            "#ADB5BD",
+            "#E5E0DA",
+          ],
+        };
+
+        const groupBy = (data, key) => {
+          const map = {};
+          data.forEach((d) => {
+            map[d[key]] = (map[d[key]] || 0) + d.val;
+          });
+          return map;
+        };
+
+        // --- 1. BAR CHART ---
+        const pmData = groupBy(baseData, "pm");
+        const pmHighlightSet = hasSelection
+          ? new Set(highlightData.map((d) => d.pm))
+          : null;
+        const sortedPMs = Object.keys(pmData).sort(
+          (a, b) => pmData[a] - pmData[b],
+        );
+
+        charts.bar.data.labels = sortedPMs;
+        charts.bar.data.datasets = [
+          {
+            data: sortedPMs.map((pm) => (pmData[pm] / 10000000).toFixed(2)),
+            backgroundColor: sortedPMs.map((pm) => {
+              if (!hasSelection) return colors.red;
+              return pmHighlightSet.has(pm) ? colors.red : colors.pink;
+            }),
+            borderRadius: 4,
+            barThickness: 25,
+          },
+        ];
+        charts.bar.update();
+
+        // --- 2. PIE / DONUT CHART ---
+        if (state.context === "forecast") {
+          // FORECAST: Donut, Legend Right, Labels Outside (Value Only)
+          const prodData = groupBy(baseData, "product");
+          const prodHighlightSet = new Set(highlightData.map((d) => d.product));
+
+          charts.pie.options.cutout = "60%";
+          charts.pie.options.layout.padding = 30;
+          charts.pie.options.plugins.legend = {
+            display: true,
+            position: "right",
+            labels: { boxWidth: 12, font: { size: 10 }, padding: 10 },
+          };
+          charts.pie.options.plugins.datalabels = {
+            display: true,
+            color: "#333",
+            anchor: "end",
+            align: "end",
+            offset: 4,
+            font: { weight: "bold", size: 10 },
+            formatter: (val) => (val / 10000000).toFixed(2),
+          };
+
+          charts.pie.data.labels = Object.keys(prodData);
+          charts.pie.data.datasets = [
+            {
+              data: Object.values(prodData),
+              backgroundColor: Object.keys(prodData).map((p, i) =>
+                !hasSelection || prodHighlightSet.has(p)
+                  ? colors.pieBase[i % colors.pieBase.length]
+                  : colors.gray,
+              ),
+              borderColor: "#fff",
+              borderWidth: 2,
+            },
+          ];
+        } else {
+          // REVENUE: Pie, No Legend, Labels Outside (Name + Value)
+          const pmCountMap = {};
+          baseData.forEach((d) => {
+            // Count occurrences of Assemblies (Column D)
+            if (d.assembly && d.assembly.trim() !== "")
+              pmCountMap[d.pm] = (pmCountMap[d.pm] || 0) + 1;
+          });
+
+          // UPDATED LOGIC: Sort by Count Descending
+          const sortedEntries = Object.entries(pmCountMap).sort(
+            (a, b) => b[1] - a[1],
+          );
+          const pmKeys = sortedEntries.map((e) => e[0]);
+          const pmValues = sortedEntries.map((e) => e[1]);
+
+          charts.pie.options.cutout = "0%";
+          charts.pie.options.layout.padding = 60;
+          charts.pie.options.plugins.legend.display = false;
+          charts.pie.options.plugins.datalabels = {
+            display: true,
+            color: "#333",
+            anchor: "end",
+            align: "end",
+            offset: 5,
+            font: { weight: "bold", size: 10 },
+            formatter: (val, ctx) =>
+              `${ctx.chart.data.labels[ctx.dataIndex]} ${val}`,
+          };
+
+          charts.pie.data.labels = pmKeys;
+          charts.pie.data.datasets = [
+            {
+              data: pmValues,
+              backgroundColor: pmKeys.map(
+                (k, i) => colors.pieBase[i % colors.pieBase.length],
+              ),
+              borderColor: "#fff",
+              borderWidth: 1,
+            },
+          ];
+        }
+        charts.pie.update();
+
+        // --- 3. LINE CHART ---
+        const monthData = groupBy(baseData, "month");
+        const monthHighlightSet = new Set(highlightData.map((d) => d.month));
+        const labels = Object.keys(monthData);
+
+        charts.line.data.labels = labels;
+        charts.line.data.datasets = [
+          {
+            data: labels.map((m) => (monthData[m] / 10000000).toFixed(2)),
+            borderColor: colors.red,
+            backgroundColor: "rgba(168, 24, 24, 0.05)",
+            fill: true,
+            tension: 0.3,
+            pointRadius: 3,
+            pointBackgroundColor: labels.map((m) =>
+              !hasSelection || monthHighlightSet.has(m) ? colors.red : "#fff",
+            ),
+          },
+        ];
+        charts.line.update();
+      }
+
+      // --- 5. TABLE LOGIC ---
+      function renderTable(data) {
+        const tbody = document.getElementById("table-body");
+
+        const uniqueProjects = new Set(data.map((d) => d.name));
+
+        document.getElementById("table-count").innerText =
+          `${uniqueProjects.size} Projects`;
+
+        tbody.innerHTML = "";
+
+        if (data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400">No projects match filters</td></tr>`;
+
+          return;
+        }
+
+        // Group data by Project
+
+        const grouped = Object.values(
+          data.reduce((acc, item) => {
+            if (!acc[item.name]) {
+              acc[item.name] = {
+                name: item.name,
+
+                pm: item.pm,
+
+                items: [],
+
+                totalVal: 0,
+              };
+            }
+
+            acc[item.name].totalVal += item.val || 0;
+
+            // 🔴 CRITICAL FIX: Always push item, even if assembly is empty (common for BOI)
+            acc[item.name].items.push(item);
+
+            return acc;
+          }, {}),
+        );
+
+        let result = grouped;
+
+        window.currentTableData = result;
+
+        // Main Table Sorting (Projects)
+
+        if (state.sort.key === "billing") {
+          result.sort((a, b) =>
+            state.sort.direction === "asc"
+              ? a.totalVal - b.totalVal
+              : b.totalVal - a.totalVal,
+          );
+        }
+
+        result.forEach((row, idx) => {
+          const rowId = `proj_${idx}`;
+
+          const isExpanded = state.expandedRows.includes(rowId);
+
+          const tr = document.createElement("tr");
+
+          tr.className = `hover:bg-gray-50 transition group ${
+            isExpanded ? "bg-gray-50" : "bg-white"
+          }`;
+
+          tr.innerHTML = `
+<td class="px-6 py-4">
+<button onclick="toggleProjectExpansion('${rowId}')" class="w-6 h-6 flex items-center justify-center rounded border ${
+            isExpanded
+              ? "bg-yogi-red border-yogi-red text-white"
+              : "border-gray-300 text-gray-500 hover:border-yogi-red hover:text-yogi-red"
+          } transition">
+
+          ${isExpanded ? "−" : "+"}
+</button>
+</td>
+<td class="px-6 py-4 font-medium text-gray-900">${row.name}</td>
+<td class="px-6 py-4 text-gray-600">${row.pm}</td>
+<td class="px-6 py-4 text-right font-bold text-gray-900">₹${row.totalVal.toLocaleString(
+            "en-IN",
+          )}</td>
+
+    `;
+
+          tbody.appendChild(tr);
+
+          if (isExpanded) {
+            const childTr = document.createElement("tr");
+
+            childTr.className = "bg-gray-50/80";
+
+            let headerHtml = "",
+              itemsHtml = "";
+
+            // --- NEW SORTING LOGIC START ---
+
+            // Clone items to sort without mutating original reference immediately
+
+            let sortedItems = [...row.items];
+
+            // Helper to get comparable integer from DD-MM-YYYY (e.g., 202601)
+
+            const getDateVal = (d) => {
+              if (!d) return 999999;
+
+              const p = d.split("-");
+
+              // Returns YYYYMM for integer comparison
+
+              return parseInt(p[2] + p[1]);
+            };
+
+            sortedItems.sort((a, b) => {
+              // Mode: DEFAULT (Complex Hierarchy)
+
+              if (state.assemblySort === "default") {
+                // 1. Dispatch Status: "Dispatched" (green) on top
+
+                const statA = a.status === "Dispatched" ? 0 : 1;
+
+                const statB = b.status === "Dispatched" ? 0 : 1;
+
+                if (statA !== statB) return statA - statB;
+
+                // 2. Month: Ascending (Jan, then Feb...)
+
+                const dateA = getDateVal(a.date);
+
+                const dateB = getDateVal(b.date);
+
+                if (dateA !== dateB) return dateA - dateB;
+
+                // 3. Billing: Descending (High Value first)
+
+                if (b.val !== a.val) return b.val - a.val;
+
+                // 4. Name: Ascending (A-Z)
+
+                return (a.assembly || "").localeCompare(b.assembly || "");
+              }
+
+              // Mode: User Overrides
+              else if (state.assemblySort === "valDesc") return b.val - a.val;
+              else if (state.assemblySort === "dateAsc")
+                return getDateVal(a.date) - getDateVal(b.date);
+              else if (state.assemblySort === "nameAsc")
+                return (a.assembly || "").localeCompare(b.assembly || "");
+
+              return 0;
+            });
+
+            // --- NEW SORTING LOGIC END ---
+
+            if (state.context === "forecast") {
+              // Modified Header with Sort Dropdown
+
+              headerHtml = `
+<div class="row items-end mb-2 border-b border-gray-200 pb-2">
+<div class="col-4">
+<h4 class="text-xs font-bold text-gray-400 uppercase">Assembly Breakdown</h4>
+</div>
+<div class="col-4 text-center">
+<h4 class="text-xs font-bold text-gray-400 uppercase">Dispatch Track</h4>
+</div>
+<div class="col-4 flex justify-end items-center gap-2">
+<span class="text-[10px] font-bold text-gray-400 uppercase">Sort By:</span>
+<select onchange="changeAssemblySort(this.value)" class="text-xs border border-gray-300 rounded bg-white text-gray-700 focus:ring-1 focus:ring-yogi-red focus:border-yogi-red p-1 cursor-pointer" style="width:140px;">
+<option value="default" ${
+                state.assemblySort === "default" ? "selected" : ""
+              }>Default (Status > Date)</option>
+<option value="valDesc" ${
+                state.assemblySort === "valDesc" ? "selected" : ""
+              }>Billing (High-Low)</option>
+<option value="dateAsc" ${
+                state.assemblySort === "dateAsc" ? "selected" : ""
+              }>Date (Old-New)</option>
+<option value="nameAsc" ${
+                state.assemblySort === "nameAsc" ? "selected" : ""
+              }>Name (A-Z)</option>
+</select>
+</div>
+</div>
+
+        `;
+
+              itemsHtml = sortedItems
+
+                .map((i) => {
+                  const badgeClass =
+                    i.status === "Dispatched"
+                      ? "success-badge"
+                      : "danger-badge"; // Added danger-badge for Not Dispatched if needed, or keep blank
+
+                  // Note: Your CSS only defined success-badge and danger-badge.
+
+                  // If status is not 'Dispatched', defaults to red/danger style logic if needed.
+
+                  // Using standard text color logic from previous code, or badge if strictly required.
+
+                  // Logic to color the dispatch date/status based on your requirement
+
+                  const statusBadge =
+                    i.status === "Dispatched"
+                      ? `<span class="success-badge">${i.month} ${i.year}</span>`
+                      : `<span class="">${i.month} ${i.year}</span>`;
+
+                  return `<div class="row d-flex flex justify-between items-center py-2 border-b border-gray-200 last:border-0 text-sm hover:bg-white transition-colors">
+<span class="col-4 text-gray-600 pl-4 border-l-2 ${
+                    i.status === "Dispatched"
+                      ? "border-green-500"
+                      : "border-red-300"
+                  }">
+
+                ${i.assembly || "—"}
+</span>
+<span class="col-4 text-center text-gray-600 flex flex-col items-center justify-center">
+
+
+                  ${statusBadge}
+</span>
+<span class="text-right col-4 font-medium text-gray-800">₹${i.val.toLocaleString(
+                    "en-IN",
+                  )}</span></div>`;
+                })
+
+                .join("");
+            } else {
+              // Keep existing layout for 'actuals' context if necessary, or update similarly
+
+              headerHtml = `<h4 class="col-12 text-xs font-bold text-gray-400 uppercase mb-2">Assembly Breakdown</h4>`;
+
+              itemsHtml = sortedItems
+
+                .map(
+                  (i) =>
+                    `<div class="row py-2 border-b border-gray-200 last:border-0 text-sm"><span class="col-12 text-gray-600 pl-4 border-l-2 border-gray-300">${
+                      i.assembly || "—"
+                    }</span></div>`,
+                )
+
+                .join("");
+            }
+
+            if (sortedItems.length === 0)
+              itemsHtml = `<div class="p-3 text-center text-gray-400 text-xs italic">No detailed assemblies available</div>`;
+
+            childTr.innerHTML = `<td colspan="6" class="p-0"><div class="expand-row px-6 py-4 border-t border-gray-200 shadow-inner bg-gray-100 mx-4 mb-4 rounded-b-lg"><div class="row mb-3"><button class="bg-yogi-red text-white px-3 py-1 rounded text-xs font-bold hover:bg-red-800 transition" onclick="generateProjectPDF('${rowId}')"><i class="fa-solid fa-file-pdf mr-2"></i> Download PDF Report</button></div>${headerHtml}${itemsHtml}</div></td>`;
+
+            tbody.appendChild(childTr);
+          }
+        });
+      }
+
+      function toggleProjectExpansion(id) {
+        const idx = state.expandedRows.indexOf(id);
+        if (idx > -1) state.expandedRows.splice(idx, 1);
+        else state.expandedRows.push(id);
+        updateDashboard();
+      }
+
+      function updateFilterChips() {
+        const container = document.getElementById("active-filters-container");
+        container.innerHTML = "";
+        let hasFilter = false;
+        const allFilters = { ...state.filters, ...state.selection };
+
+        Object.entries(allFilters).forEach(([key, val]) => {
+          if (val && (Array.isArray(val) ? val.length > 0 : true)) {
+            hasFilter = true;
+            const isSelection = key in state.selection;
+            const bgClass = isSelection
+              ? "bg-red-100 text-red-800"
+              : "bg-blue-100 text-blue-800";
+            const displayVal = Array.isArray(val)
+              ? `${val.length} Months`
+              : val;
+            const chip = document.createElement("div");
+            chip.className = `${bgClass} text-xs font-semibold px-2 py-1 rounded flex items-center gap-1`;
+            const closeAction = isSelection
+              ? `applyChartFilter('${key}', '${val}')`
+              : `applySlicer('${key}', 'all'); if(document.getElementById('filter-${key}')) document.getElementById('filter-${key}').value='all'`;
+            chip.innerHTML = `<span>${key.toUpperCase()}: ${displayVal}</span><button onclick="${closeAction}" class="hover:text-red-600 font-bold">&times;</button>`;
+            container.appendChild(chip);
+          }
+        });
+        container.classList.toggle("hidden", !hasFilter);
+      }
+
+      function toggleBillingSort() {
+        state.sort.direction = state.sort.direction === "asc" ? "desc" : "asc";
+        document.getElementById("billingSortIcon").innerText =
+          state.sort.direction === "asc" ? "▲" : "▼";
+        updateDashboard();
+      }
+
+      function populateMonthFilter(months) {
+        const list = document.getElementById("monthDropdownList");
+        list.innerHTML = "";
+        if (months.length === 0) {
+          list.innerHTML = `<div class="p-2 text-xs text-gray-500">No data</div>`;
+          return;
+        }
+        months.forEach((m) => {
+          const item = document.createElement("div");
+          item.className =
+            "flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer";
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = state.filters.month.includes(m);
+          checkbox.className =
+            "form-checkbox h-3 w-3 text-yogi-red rounded border-gray-300 focus:ring-yogi-red pointer-events-none";
+          const span = document.createElement("span");
+          span.className = "ml-2 text-xs text-gray-700 select-none";
+          span.innerText = m;
+          item.appendChild(checkbox);
+          item.appendChild(span);
+          item.onclick = (e) => {
+            e.stopPropagation();
+            toggleMonthFilter(m);
+            checkbox.checked = state.filters.month.includes(m);
+          };
+          list.appendChild(item);
+        });
+      }
+
+      function toggleMonthFilter(month) {
+        const idx = state.filters.month.indexOf(month);
+        if (idx > -1) state.filters.month.splice(idx, 1);
+        else state.filters.month.push(month);
+        document.getElementById("monthBtnText").innerText =
+          state.filters.month.length === 0
+            ? "All Months"
+            : `${state.filters.month.length} Selected`;
+        updateDashboard();
+      }
+
+      function toggleMonthDropdown() {
+        document.getElementById("monthDropdownList").classList.toggle("hidden");
+      }
+      window.addEventListener("click", (e) => {
+        const btn = document.getElementById("monthDropdownBtn");
+        const list = document.getElementById("monthDropdownList");
+        if (!btn.contains(e.target) && !list.contains(e.target))
+          list.classList.add("hidden");
+      });
+
+      document.addEventListener("DOMContentLoaded", init);
+
+      async function generateProjectPDF(rowId) {
+        const { jsPDF } = window.jspdf;
+        let project;
+        if (String(rowId).startsWith("proj_")) {
+          const idx = parseInt(rowId.split("_")[1]);
+          project = window.currentTableData[idx];
+        } else {
+          project = window.currentTableData.find((p) => p.id === rowId);
+        }
+
+        if (!project) {
+          alert("Error: Project data not found.");
+          return;
+        }
+
+        const doc = new jsPDF();
+        const brandRed = "#a81818";
+        const logo = document.getElementById("pdfLogo");
+        if (logo) doc.addImage(logo, "PNG", 14, 10, 40, 15);
+
+        // --- DYNAMIC CONTENT LOGIC ---
+        const isForecast = state.context === "forecast";
+        const reportTitle = isForecast
+          ? "Detailed Forecast Assembly Overview"
+          : "Detailed Actual Assembly Overview";
+
+        const fyText = document.getElementById("fy").innerText;
+
+        doc.setFontSize(15);
+        doc.setTextColor(brandRed);
+        doc.text(reportTitle, 14, 34);
+
+        doc.setFontSize(9);
+        doc.setTextColor(100);
+        doc.text(fyText, 14, 40);
+
+        const startY = 46;
+        doc.setFillColor(245, 245, 245);
+        doc.rect(14, startY, 182, 20, "F");
+
+        doc.setFontSize(10);
+        doc.setTextColor(0);
+        doc.setFont("helvetica", "bold");
+        doc.text("Project Name:", 18, startY + 8);
+        doc.setFont("helvetica", "normal");
+        doc.text(project.name, 18, startY + 14);
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Project Manager:", 90, startY + 8);
+        doc.setFont("helvetica", "normal");
+        doc.text(project.pm, 90, startY + 14);
+
+        // Only show Total Value if in Forecast mode
+        // if (isForecast) {
+        doc.setFont("helvetica", "bold");
+        doc.text("Total Billing Value:", 140, startY + 8);
+        doc.setFont("helvetica", "normal");
+        doc.text(
+          `Rs. ${project.totalVal.toLocaleString("en-IN")}`,
+          140,
+          startY + 14,
+        );
+        // }
+
+        // --- DYNAMIC TABLE COLUMNS ---
+        let tableHead, tableBody, columnStyles;
+
+        if (isForecast) {
+          tableHead = [
+            ["Assembly Name", "Dispatch Track", "Billing Value (INR)"],
+          ];
+          tableBody = project.items.map((item) => [
+            item.assembly,
+            `${item.month} ${item.year}`,
+            item.val.toLocaleString("en-IN"),
+          ]);
+          columnStyles = { 2: { halign: "right" } };
+        } else {
+          // For Actuals: Remove Date and Value columns
+          tableHead = [["Assembly Name"]];
+          tableBody = project.items.map((item) => [item.assembly]);
+          columnStyles = {};
+        }
+
+        doc.autoTable({
+          startY: startY + 26,
+          head: tableHead,
+          body: tableBody,
+          theme: "grid",
+          headStyles: {
+            fillColor: brandRed,
+            textColor: 255,
+            fontStyle: "bold",
+          },
+          columnStyles: columnStyles,
+          styles: { fontSize: 9, cellPadding: 3 },
+        });
+
+        const prefix = isForecast ? "forecast" : "actual";
+        const safeName = project.name.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+        doc.save(`${prefix}_${safeName}_report.pdf`);
+      }
+
+      function generateRankedMonthPDF() {
+        const { jsPDF } = window.jspdf;
+        if (!window.currentTableData || window.currentTableData.length === 0) {
+          alert("No data available to export.");
+          return;
+        }
+        const doc = new jsPDF();
+        const brandRed = "#a81818";
+        const logo = document.getElementById("pdfLogo");
+        if (logo) doc.addImage(logo, "PNG", 14, 10, 40, 15);
+
+        // --- DYNAMIC DATA CALCULATION ---
+        const isForecast = state.context === "forecast";
+        const reportTitle = isForecast
+          ? "Project Forecast Report"
+          : "Actual Revenue Report";
+        const totalLabel = isForecast
+          ? "TOTAL FORECAST"
+          : "TOTAL ACTUAL REVENUE";
+
+        // Get Financial Year from the UI element
+        const fyText = document.getElementById("fy").innerText; // e.g., "(FY 2025-26)"
+
+        // Determine Date Range from Filters
+        let dateRangeText = "Full Financial Year";
+        if (state.filters.month && state.filters.month.length > 0) {
+          const MONTH_ORDER = [
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+            "Jan",
+            "Feb",
+            "Mar",
+          ];
+          const selected = [...state.filters.month].sort(
+            (a, b) => MONTH_ORDER.indexOf(a) - MONTH_ORDER.indexOf(b),
+          );
+
+          if (selected.length === 1) {
+            dateRangeText = `Month: ${selected[0]}`;
+          } else {
+            dateRangeText = `Period: ${selected[0]} to ${
+              selected[selected.length - 1]
+            }`;
+          }
+        }
+
+        // --- PDF HEADER ---
+        doc.setFontSize(16);
+        doc.setTextColor(brandRed);
+        doc.text(reportTitle, 14, 35);
+
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        // This adds "FY 2025-26 | Period: Apr to Aug" under the title
+        doc.text(`${fyText}  |  ${dateRangeText}`, 14, 42);
+
+        const rankedData = [...window.currentTableData].sort(
+          (a, b) => b.totalVal - a.totalVal,
+        );
+        const totalBilling = rankedData.reduce((sum, p) => sum + p.totalVal, 0);
+
+        const tableBody = rankedData.map((proj, index) => [
+          index + 1,
+          proj.name,
+          proj.pm,
+          proj.items.length,
+          proj.totalVal.toLocaleString("en-IN"),
+        ]);
+
+        doc.autoTable({
+          startY: 48,
+          head: [["#", "Project Name", "Manager", "Items", "Billing (INR)"]],
+          body: tableBody,
+          theme: "grid",
+          headStyles: {
+            fillColor: brandRed,
+            textColor: 255,
+            fontStyle: "bold",
+          },
+          columnStyles: {
+            0: { halign: "center" },
+            4: { halign: "right", fontStyle: "bold" },
+          },
+          foot: [
+            [
+              "",
+              totalLabel,
+              "",
+              "",
+              `Rs. ${totalBilling.toLocaleString("en-IN")}`,
+            ],
+          ],
+          footStyles: {
+            fillColor: [240, 240, 240],
+            textColor: 0,
+            fontStyle: "bold",
+            halign: "right",
+          },
+        });
+
+        const fileName = isForecast
+          ? `Forecast_Report_${dateRangeText.replace(/ /g, "_")}.pdf`
+          : `Actual_Report_${dateRangeText.replace(/ /g, "_")}.pdf`;
+        doc.save(fileName);
+      }
+      function dateNtime(isoDate) {
+        return new Date(isoDate).toLocaleString("en-IN", {
+          timeZone: "Asia/Kolkata",
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        });
+      }
+    </script>
+  </body>
+</html>

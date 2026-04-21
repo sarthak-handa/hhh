@@ -1,0 +1,314 @@
+    :root{
+      --border:#9b9b9b;
+      --muted:#6b6b6b;
+      --accent:#ad283f;
+      --paper-bg: #fff;
+      /* --page-width: 820px; */
+      align-content: center;
+    }
+
+    body{
+      font-family: "Inter", Arial, sans-serif;
+    }
+
+    .controls{
+      display:flex;
+      /* flex-direction:column; */
+      gap:10px;
+      align-self:flex-start;
+    }
+
+    button{
+      background:#222;
+      color:white;
+      border:0;
+      padding:10px 14px;
+      border-radius:6px;
+      cursor:pointer;
+      font-weight:600;
+    }
+    button.secondary{ background: #4a4a4a; }
+
+    /* Sheet container (the printable area) */
+    .sheet-wrap{
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      background:var(--paper-bg);
+      padding:24px;
+      width:var(--page-width);
+      box-sizing:border-box;
+    }
+
+    /* Paper look */
+    #sheet{
+      width:100%;
+      background:white;
+      padding:18px;
+      box-sizing:border-box;
+      border:1px solid var(--border);
+    }
+
+    .headerDoc{
+      display:flex;
+      align-items:center;
+      /* gap:12px; */
+      margin-top:20px;
+      margin-bottom:30px;
+    }
+    /* .logoDoc{
+      height:56px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid var(--border);
+      font-size:12px;
+      font-weight:700;
+      color:var(--muted);
+    } */
+    .title{
+      flex:1;
+      text-align:center;
+      font-size:32px;
+      font-weight:800;
+      letter-spacing:1px;
+    }
+
+    /* Top table row */
+    .top-row{
+      display:flex;
+      gap:8px;
+      margin-top:8px;
+      /* margin-bottom:10px; */
+    }
+    .card{
+      flex:1;
+      border:1px solid var(--border);
+      padding:10px;
+      min-height:120px;
+      box-sizing:border-box;
+    }
+    .card h4{
+      margin:0 0 6px 0;
+      font-size:13px;
+      color:var(--muted);
+    }
+    .card p{
+      margin:2px 0;
+      font-size:13px;
+    }
+    .small-list { margin:6px 0 0 18px; font-size:13px; }
+
+    .subject{
+      /* border:1px solid var(--border); */
+      border: 1px solid #e5e5e5;
+      padding:8px;
+      margin-bottom:10px;
+      /* font-weight:600; */
+    }
+
+    .observations{
+      /* border:1px solid var(--border); */
+      /* min-height:130px; */
+      border: 1px solid #e5e5e5;
+      padding:12px;
+      box-sizing:border-box;
+      font-size:13px;
+      margin-bottom:10px;
+      border-radius: 4px;
+    }
+    .observations ol{ margin:6px 0 0 18px; padding:0; }
+
+    .actionTaken{
+      /* border:1px solid var(--border); */
+      /* min-height:130px; */
+      border: 1px solid #e5e5e5;
+      padding:12px;
+      box-sizing:border-box;
+      font-size:13px;
+      border-radius: 4px;
+    }
+    .actionTaken ol{ margin:6px 0 0 18px; padding:0; }
+
+    .bottom-row{
+      display:flex;
+      gap:8px;
+      margin-top:12px;
+    }
+    .col{
+      flex:1;
+      border:1px solid var(--border);
+      /* min-height:140px; */
+      padding:12px;
+      box-sizing:border-box;
+    }
+    .col .label{ font-weight:700; color:var(--muted); margin-bottom:6px; display:block; }
+    .signature{
+      min-height: 110px;
+      height:50px;
+      /* border-top:1px dashed #ddd; */
+      /* margin-top:8px; */
+      /* display:flex; */
+      /* align-items:flex-end; */
+      justify-content:center;
+      color:#777;
+      font-size:12px;
+      padding-bottom:6px;
+    }
+
+    .date-row{
+      display:flex;
+      margin-top:10px;
+      gap:12px;
+      align-items:center;
+    }
+    .date-row .date-box{
+      flex:1;
+      min-height:40px;
+      border:1px solid var(--border);
+      padding:6px;
+    }
+
+    /* small print */
+    /* .muted{ color:var(--muted); font-size:12px; } */
+
+    /* Editable fields hint */
+    [contenteditable="true"]{
+      outline: none;
+      padding:1px;
+    }
+    /* scale for print */
+    /* @media print{
+      body{ background:white; }
+      .controls{ display:none; }
+      .noprint{ display:none; }
+      .sheet-wrap{ box-shadow:none; }
+    } */
+
+    /* responsiveness */
+    @media (max-width:900px){
+      :root{ --page-width: 640px; }
+      .top-row,.bottom-row{ flex-direction:column; }
+    }
+
+
+
+/* MOM Document Styling */
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f8f9fa;
+  color: #333;
+}
+
+.sheet-wrap {
+  background: #fff;
+  /* padding: 25px 40px; */
+  border: 1px solid #ccc;
+  /* margin: 20px auto; */
+  /* max-width: 800px; */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+#sheet {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.headerDoc {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid #ad283f;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.headerDoc .title {
+  font-size: 35px;
+  font-weight: 800;
+  text-align: center;
+  flex: 1;
+  color: #ad283f;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.card {
+  background: #fdfdfd;
+  border: 1px solid #e5e5e5;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.card h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #ad283f;
+}
+
+.small-list {
+  margin-left: 20px;
+  padding-left: 0;
+}
+
+.subject {
+  /* font-weight: 600; */
+  /* margin: 20px 0; */
+  padding: 10px;
+  border-left: 4px solid #ad283f;
+  border-radius: 4px;
+  /* background: #f9f9f9; */
+}
+
+.observations strong,
+.actionTaken strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ad283f;
+  margin-bottom: 6px;
+  
+}
+
+.observations ol,
+.actionTaken ol {
+  margin-left: 20px;
+}
+
+.bottom-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  gap: 8px;
+}
+
+.bottom-row .col {
+  flex: 1;
+  /* border: 1px solid #ccc; */
+  border: 1px solid #e5e5e5;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+  color: #ad283f;
+}
+
+.signature {
+  /* margin-top: 50px; */
+  text-align: center;
+  font-size: 12px;
+  /* border-top: 1px solid #000; */
+  padding-top: 3px;
+  font-style: italic;
+}
+
+.date-row {
+  margin-top: 15px;
+  /* text-align: right; */
+  font-weight: 600;
+}
