@@ -60,6 +60,7 @@ function isInCurrentFiscalWindow(dispatchDate) {
   const currentMonth = now.getMonth();
   const startOfCurrentMonth = new Date(currentYear, currentMonth, 1);
 
+<<<<<<< HEAD
   // Broaden window: Show data from 12 months ago up to end of next fiscal year
   const dataStartDate = new Date(startOfCurrentMonth);
   dataStartDate.setMonth(dataStartDate.getMonth() - 12);
@@ -72,6 +73,19 @@ function isInCurrentFiscalWindow(dispatchDate) {
   }
   const fiscalEndDate = new Date(fiscalYearStart + 2, 2, 31, 23, 59, 59); // Next year's end
   return dispatchDate >= dataStartDate && dispatchDate <= fiscalEndDate;
+=======
+  if (dispatchDate < startOfCurrentMonth) return false;
+
+  if (currentMonth <= 2) {
+    fiscalYearStart = currentYear - 1;
+    fiscalYearEnd = currentYear;
+  } else {
+    fiscalYearStart = currentYear;
+    fiscalYearEnd = currentYear + 1;
+  }
+  const fiscalEndDate = new Date(fiscalYearStart + 1, 2, 31, 23, 59, 59);
+  return dispatchDate >= startOfCurrentMonth && dispatchDate <= fiscalEndDate;
+>>>>>>> b185b0f655e0f265132efd6f493f097b40f33e7c
 }
 
 // --- MAIN HANDLER ---
