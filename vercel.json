@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://ydprojects.ydagchmi.com/api/$1"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/forecastDashboard.html",
+      "destination": "/"
+    }
+  ]
+}
