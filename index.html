@@ -851,17 +851,92 @@
           },
         });
 
-        // 2. PIE CHART
+        // 2. PIE CHART — Custom Connector Line Plugin
+        const pieOutlabelPlugin = {
+          id: 'pieOutlabels',
+          afterDraw(chart) {
+            // Only draw for forecast context doughnut
+            if (chart.config.type !== 'doughnut') return;
+            const { ctx, chartArea } = chart;
+            const meta = chart.getDatasetMeta(0);
+            if (!meta || !meta.data || meta.data.length === 0) return;
+
+            const centerX = (chartArea.left + chartArea.right) / 2;
+            const centerY = (chartArea.top + chartArea.bottom) / 2;
+
+            meta.data.forEach((arc, i) => {
+              const data = chart.data.datasets[0].data[i];
+              if (!data || data === 0) return;
+              const label = chart.data.labels[i] || '';
+              const valCr = (data / 10000000).toFixed(2);
+
+              // Get midpoint angle of the arc
+              const startAngle = arc.startAngle;
+              const endAngle = arc.endAngle;
+              const midAngle = (startAngle + endAngle) / 2;
+
+              // Point on the outer edge of the arc
+              const outerRadius = arc.outerRadius;
+              const edgeX = centerX + Math.cos(midAngle) * outerRadius;
+              const edgeY = centerY + Math.sin(midAngle) * outerRadius;
+
+              // Elbow point (further out)
+              const elbowLen = 18;
+              const elbowX = centerX + Math.cos(midAngle) * (outerRadius + elbowLen);
+              const elbowY = centerY + Math.sin(midAngle) * (outerRadius + elbowLen);
+
+              // Horizontal line direction
+              const isRight = elbowX >= centerX;
+              const lineLen = 25;
+              const endX = isRight ? elbowX + lineLen : elbowX - lineLen;
+              const endY = elbowY;
+
+              // Draw the connector line
+              ctx.save();
+              ctx.beginPath();
+              ctx.moveTo(edgeX, edgeY);
+              ctx.lineTo(elbowX, elbowY);
+              ctx.lineTo(endX, endY);
+              ctx.strokeStyle = '#999';
+              ctx.lineWidth = 1;
+              ctx.stroke();
+
+              // Draw dot at edge
+              ctx.beginPath();
+              ctx.arc(edgeX, edgeY, 2.5, 0, Math.PI * 2);
+              ctx.fillStyle = '#666';
+              ctx.fill();
+
+              // Draw label text
+              ctx.font = 'bold 10px Inter, sans-serif';
+              ctx.fillStyle = '#333';
+              ctx.textAlign = isRight ? 'left' : 'right';
+              ctx.textBaseline = 'bottom';
+              const textX = isRight ? endX + 4 : endX - 4;
+              ctx.fillText(label, textX, endY - 1);
+
+              // Draw value below
+              ctx.font = '10px Inter, sans-serif';
+              ctx.fillStyle = '#666';
+              ctx.textBaseline = 'top';
+              ctx.fillText(valCr + ' Cr', textX, endY + 1);
+
+              ctx.restore();
+            });
+          }
+        };
+
         const ctxPie = document.getElementById("pieChart").getContext("2d");
         charts.pie = new Chart(ctxPie, {
           type: "doughnut",
           data: { labels: [], datasets: [] },
-          plugins: [ChartDataLabels],
+          plugins: [ChartDataLabels, pieOutlabelPlugin],
           options: {
             ...commonOpts,
-            layout: { padding: 40 },
+            layout: { padding: 80 },
             plugins: {
-              legend: { position: "right" },
+              legend: { display: false },
+              datalabels: { display: false },
             },
             onClick: (e, els) => {
               if (els.length)
@@ -972,22 +1047,10 @@
           const prodData = groupBy(baseData, "product");
           const prodHighlightSet = new Set(highlightData.map((d) => d.product));
 
-          charts.pie.options.cutout = "60%";
-          charts.pie.options.layout.padding = 30;
-          charts.pie.options.plugins.legend = {
-            display: true,
-            position: "right",
-            labels: { boxWidth: 12, font: { size: 10 }, padding: 10 },
-          };
-          charts.pie.options.plugins.datalabels = {
-            display: true,
-            color: "#333",
-            anchor: "end",
-            align: "end",
-            offset: 4,
-            font: { weight: "bold", size: 10 },
-            formatter: (val) => (val / 10000000).toFixed(2),
-          };
+          charts.pie.options.cutout = "55%";
+          charts.pie.options.layout.padding = 80;
+          charts.pie.options.plugins.legend = { display: false };
+          charts.pie.options.plugins.datalabels = { display: false };
 
           charts.pie.data.labels = Object.keys(prodData);
           charts.pie.data.datasets = [
