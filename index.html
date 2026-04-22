@@ -3698,33 +3698,73 @@ body {
       rel="stylesheet"
     />
     <style>
-      /* --- LOADER CSS FIXED (New Spinner) --- */
+      /* --- FUTURISTIC RED LOADER --- */
       #loader {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: #020617; /* slate-950 */
-        z-index: 9999; display: flex; justify-content: center; align-items: center;
-        transition: opacity 0.4s ease-out;
+        z-index: 9999; display: flex; flex-direction: column;
+        justify-content: center; align-items: center;
+        transition: opacity 0.6s ease-out;
+        overflow: hidden;
       }
-      .cyber-loader {
-        width: 60px; height: 60px;
-        border: 3px solid transparent;
-        border-top-color: #38bdf8; /* bright blue */
-        border-bottom-color: #f43f5e; /* rose */
-        border-radius: 50%;
-        animation: cyber-spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-        box-shadow: 0 0 20px rgba(56,189,248,0.5), inset 0 0 20px rgba(244,63,94,0.5);
-        position: relative;
+      #loader canvas.matrix-rain {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        opacity: 0.18;
       }
-      .cyber-loader::before {
-        content: ''; position: absolute; top: 5px; left: 5px; right: 5px; bottom: 5px;
-        border: 3px solid transparent;
-        border-left-color: #f43f5e; border-right-color: #38bdf8;
-        border-radius: 50%;
-        animation: cyber-spin-reverse 0.5s linear infinite;
+      .loader-content {
+        position: relative; z-index: 2;
+        display: flex; flex-direction: column; align-items: center; gap: 28px;
       }
-      @keyframes cyber-spin { 100% { transform: rotate(360deg); } }
-      @keyframes cyber-spin-reverse { 100% { transform: rotate(-360deg); } }
-
+      .bar-chart-loader {
+        display: flex; align-items: flex-end; gap: 5px; height: 80px;
+      }
+      .bar-chart-loader .bar {
+        width: 6px; border-radius: 3px 3px 0 0;
+        background: linear-gradient(0deg, #a81818, #ff2020);
+        box-shadow: 0 0 12px rgba(168,24,24,0.6), 0 0 30px rgba(255,0,0,0.2);
+        animation: bar-pulse 1.2s ease-in-out infinite;
+      }
+      .bar-chart-loader .bar:nth-child(1)  { height: 20px; animation-delay: 0s; }
+      .bar-chart-loader .bar:nth-child(2)  { height: 35px; animation-delay: 0.08s; }
+      .bar-chart-loader .bar:nth-child(3)  { height: 50px; animation-delay: 0.16s; }
+      .bar-chart-loader .bar:nth-child(4)  { height: 65px; animation-delay: 0.24s; }
+      .bar-chart-loader .bar:nth-child(5)  { height: 80px; animation-delay: 0.32s; }
+      .bar-chart-loader .bar:nth-child(6)  { height: 60px; animation-delay: 0.40s; }
+      .bar-chart-loader .bar:nth-child(7)  { height: 45px; animation-delay: 0.48s; }
+      .bar-chart-loader .bar:nth-child(8)  { height: 70px; animation-delay: 0.56s; }
+      .bar-chart-loader .bar:nth-child(9)  { height: 40px; animation-delay: 0.64s; }
+      .bar-chart-loader .bar:nth-child(10) { height: 55px; animation-delay: 0.72s; }
+      .bar-chart-loader .bar:nth-child(11) { height: 30px; animation-delay: 0.80s; }
+      .bar-chart-loader .bar:nth-child(12) { height: 48px; animation-delay: 0.88s; }
+      @keyframes bar-pulse {
+        0%, 100% { transform: scaleY(1); opacity: 0.7; }
+        50% { transform: scaleY(0.3); opacity: 1; }
+      }
+      .loader-text {
+        font-family: 'Courier New', monospace;
+        font-size: 12px; letter-spacing: 6px;
+        color: #a81818; text-transform: uppercase;
+        animation: text-flicker 2s ease-in-out infinite;
+      }
+      @keyframes text-flicker {
+        0%, 100% { opacity: 1; text-shadow: 0 0 8px rgba(168,24,24,0.8); }
+        50% { opacity: 0.5; text-shadow: 0 0 2px rgba(168,24,24,0.3); }
+      }
+      .loader-progress-track {
+        width: 200px; height: 2px; background: rgba(168,24,24,0.15);
+        border-radius: 1px; overflow: hidden;
+      }
+      .loader-progress-fill {
+        height: 100%; width: 0%;
+        background: linear-gradient(90deg, #a81818, #ff2020, #a81818);
+        background-size: 200% 100%;
+        border-radius: 1px;
+        animation: progress-sweep 2s ease-in-out infinite;
+      }
+      @keyframes progress-sweep {
+        0% { width: 0%; background-position: 0% 0; }
+        50% { width: 100%; background-position: 100% 0; }
+        100% { width: 0%; background-position: 0% 0; }
+      }
       .hidden-loader {
         opacity: 0;
         pointer-events: none;
@@ -3828,8 +3868,53 @@ body {
   </style>
   <script>function toggleTheme() { document.documentElement.classList.toggle("dark"); const isDark = document.documentElement.classList.contains("dark"); localStorage.setItem("theme", isDark ? "dark" : "light"); if (window.updateChartThemes) window.updateChartThemes(isDark); } if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) { document.documentElement.classList.add("dark"); } else { document.documentElement.classList.remove("dark"); }</script></head>
   <body class="bg-gray-50 text-gray-800 dark:bg-[#020617] dark:text-slate-100 font-sans antialiased transition-colors duration-300">
-    <div id="loader" class="bg-gray-50 dark:bg-[#020617] transition-colors duration-300">
-      <div class="cyber-loader"></div>
+    <div id="loader" class="bg-white dark:bg-[#0a0000] transition-colors duration-300">
+      <canvas id="matrixCanvas" class="matrix-rain"></canvas>
+      <div class="loader-content">
+        <div class="bar-chart-loader">
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        </div>
+        <div class="loader-text">Initializing</div>
+        <div class="loader-progress-track"><div class="loader-progress-fill"></div></div>
+      </div>
+      <script>
+        (function() {
+          var c = document.getElementById('matrixCanvas');
+          if (!c) return;
+          var ctx = c.getContext('2d');
+          c.width = window.innerWidth;
+          c.height = window.innerHeight;
+          var cols = Math.floor(c.width / 14);
+          var drops = [];
+          for (var i = 0; i < cols; i++) drops[i] = Math.random() * -100;
+          var chars = '0123456789₹%ABCDEF.:';
+          function draw() {
+            ctx.fillStyle = 'rgba(10, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, c.width, c.height);
+            ctx.fillStyle = '#a81818';
+            ctx.font = '12px monospace';
+            for (var i = 0; i < drops.length; i++) {
+              var ch = chars[Math.floor(Math.random() * chars.length)];
+              ctx.globalAlpha = Math.random() * 0.5 + 0.2;
+              ctx.fillText(ch, i * 14, drops[i] * 14);
+              if (drops[i] * 14 > c.height && Math.random() > 0.975) drops[i] = 0;
+              drops[i]++;
+            }
+            ctx.globalAlpha = 1;
+            if (!document.getElementById('loader').classList.contains('hidden-loader')) {
+              requestAnimationFrame(draw);
+            }
+          }
+          draw();
+          window.addEventListener('resize', function() {
+            c.width = window.innerWidth;
+            c.height = window.innerHeight;
+          });
+        })();
+      </script>
     </div>
 
     <header
