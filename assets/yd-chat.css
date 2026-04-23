@@ -403,3 +403,62 @@ body.dark-mode .ydc-root {
     padding-right: 0.9rem;
   }
 }
+/* Data Cards and Rich Results */
+.ydc-data-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 200px;
+}
+
+.dark .ydc-data-card {
+  background: rgba(15, 23, 42, 0.4);
+  border-color: rgba(148, 163, 184, 0.1);
+}
+
+.ydc-card-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ydc-muted);
+}
+
+.ydc-card-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #38bdf8;
+}
+
+.ydc-card-subtitle {
+  font-size: 0.75rem;
+  color: var(--ydc-muted);
+}
+
+.ydc-card-action {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: var(--ydc-red);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.ydc-card-action:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+.dark .ydc-card-action {
+  background: #38bdf8;
+  color: #0f172a;
+}

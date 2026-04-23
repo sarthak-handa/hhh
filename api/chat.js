@@ -450,180 +450,147 @@ function formatActiveFilters(filters, selection) {
 
 function getStructuredDashboardReply(question, context, messages) {
   const dashboard = context?.dashboard?.dashboard;
-  if (!dashboard || typeof dashboard !== "object") {
-    return "";
-  }
+  if (!dashboard || typeof dashboard !== "object") return "";
 
   const lowerQuestion = normalizeQuestionText(question);
-  const monthlyBreakdown = Array.isArray(dashboard.monthlyBreakdown)
-    ? dashboard.monthlyBreakdown
-    : [];
-  const topProjectManagers = Array.isArray(dashboard.topProjectManagers)
-    ? dashboard.topProjectManagers
-    : [];
-  const topVisibleProjects = Array.isArray(dashboard.topVisibleProjects)
-    ? dashboard.topVisibleProjects
-    : [];
-  const visibleProjectNames = Array.isArray(dashboard.visibleProjectNames)
-    ? dashboard.visibleProjectNames
-    : [];
+  const topProjectManagers = Array.isArray(dashboard.topProjectManagers) ? dashboard.topProjectManagers : [];
+  const topVisibleProjects = Array.isArray(dashboard.topVisibleProjects) ? dashboard.topVisibleProjects : [];
   const mode = dashboard.mode || "forecast";
   const filtersText = formatActiveFilters(dashboard.filters, dashboard.selection);
   const topLeader = topProjectManagers[0] || null;
-  const recentUserMessages = Array.isArray(messages)
-    ? messages
-        .filter((message) => message.role === "user")
-        .slice(-4)
-        .map((message) => normalizeQuestionText(message.content))
-    : [];
-  const priorUserMessages = recentUserMessages.slice(0, -1);
-  const recentTopPerformerContext = priorUserMessages.some((entry) =>
-    includesAny(entry, [
-      "top performer",
-      "highest billing",
-      "highest revenue",
-      "top pm",
-      "top manager",
-      "best performer",
-    ]),
-  );
   const asksRevenue = includesAny(lowerQuestion, ["revenue", "revenye", "billing"]);
-  const asksTopPerformer = includesAny(lowerQuestion, [
-    "top performer",
-    "best performer",
-    "highest performer",
-    "highest billing",
-    "highest revenue",
-    "top pm",
-    "top manager",
-    "leading pm",
-    "leader in revenue",
-  ]);
+  const asksTopPerformer = includesAny(lowerQuestion, ["top performer", "best performer", "highest billing", "top pm", "top manager"]);
   const asksTopProject = includesAny(lowerQuestion, ["top project", "highest project"]);
-  const asksPageSummary = includesAny(lowerQuestion, [
-    "summarize this page",
-    "what does this dashboard show",
-    "what is on this page",
-  ]);
+  const asksPageSummary = includesAny(lowerQuestion, ["summarize this page", "what does this dashboard show"]);
   const asksProjectCount = includesAny(lowerQuestion, ["how many projects", "project count"]);
   const asksAverageMonthly = includesAny(lowerQuestion, ["average monthly"]);
-  const isAcknowledgement = [
-    "yes",
-    "yes exactly",
-    "exactly",
-    "right",
-    "correct",
-  ].includes(lowerQuestion);
-  const leaderNameLower = topLeader ? normalizeQuestionText(topLeader.pm) : "";
 
+  if (lowerQuestion.includes("reset") && lowerQuestion.includes("filter")) {
+    return {
+      reply: "I've reset all your filters to the default view.",
+      suggestions: ["Show top 5 PMs", "Monthly billing summary", "Who is leading revenue?"],
+      action: { type: "code", code: "resetAllFilters()" }
+    };
+  }
+
+  if (asksTopPerformer && topLeader) {
+    return JSON.stringify({
+      type: "kpi_card",
+      title: "Top Performer",
+      value: topLeader.pm,
+      subtitle: `Rs. ${topLeader.billingCr.toLocaleString("en-IN")} Cr (${mode})`,
+      action: { label: "Filter to this PM", code: `applyChartFilter('pm', '${topLeader.pm}')` }
+    });
+  }
+
+  if (asksTotalBilling(lowerQuestion) && dashboard.kpis?.billing) {
+     return JSON.stringify({
+      type: "kpi_card",
+      title: mode === 'forecast' ? "Total Forecast" : "Total Revenue",
+      value: dashboard.kpis.billing,
+      subtitle: filtersText !== 'no extra filters applied' ? `With active filters` : "Full Year View",
+      action: { label: "Export to Excel", code: "exportToExcel()" }
+    });
+  }
+
+  if (asksTopProject && topVisibleProjects.length > 0) {
+    const leader = topVisibleProjects[0];
+    return JSON.stringify({
+      type: "kpi_card",
+      title: "Top Project",
+      value: leader.name,
+      subtitle: `Rs. ${leader.totalBillingCr.toLocaleString("en-IN")} Cr`,
+      action: { label: "Open Details", code: `openProjectDrillthrough('${leader.name}')` }
+    });
+  }
+
+  if (asksRevenue || asksTopPerformer || asksTopProject || asksPageSummary || asksProjectCount || asksAverageMonthly) {
+    // If we didn't return a card, return a structured object with suggestions
+    const textReply = getStructuredDashboardTextReply(question, context, messages);
+    if (textReply) {
+      return {
+        reply: textReply,
+        suggestions: getSemanticSuggestions(mode, dashboard.filters, dashboard.selection)
+      };
+    }
+  }
+
+  return "";
+}
+
+function asksTotalBilling(lowerQuestion) {
+  return includesAny(lowerQuestion, ["total billing", "total revenue", "how much billing", "how much revenue"]);
+}
+
+function getStructuredDashboardTextReply(question, context, messages) {
+  const dashboard = context?.dashboard?.dashboard;
+  if (!dashboard || typeof dashboard !== "object") return "";
+  const lowerQuestion = normalizeQuestionText(question);
+  const monthlyBreakdown = Array.isArray(dashboard.monthlyBreakdown) ? dashboard.monthlyBreakdown : [];
+  const topProjectManagers = Array.isArray(dashboard.topProjectManagers) ? dashboard.topProjectManagers : [];
+  const topVisibleProjects = Array.isArray(dashboard.topVisibleProjects) ? dashboard.topVisibleProjects : [];
+  const visibleProjectNames = Array.isArray(dashboard.visibleProjectNames) ? dashboard.visibleProjectNames : [];
+  const mode = dashboard.mode || "forecast";
+  const filtersText = formatActiveFilters(dashboard.filters, dashboard.selection);
+  const topLeader = topProjectManagers[0] || null;
+  const asksRevenue = includesAny(lowerQuestion, ["revenue", "revenye", "billing"]);
+  const asksTopPerformer = includesAny(lowerQuestion, ["top performer", "best performer", "highest billing", "top pm", "top manager"]);
+  const asksTopProject = includesAny(lowerQuestion, ["top project", "highest project"]);
+  const asksPageSummary = includesAny(lowerQuestion, ["summarize this page", "what does this dashboard show"]);
+  const asksProjectCount = includesAny(lowerQuestion, ["how many projects", "project count"]);
+  const asksAverageMonthly = includesAny(lowerQuestion, ["average monthly"]);
+  
   if (lowerQuestion.includes("forecast") && lowerQuestion.includes("actual")) {
     return `Forecast is the planned view: expected billing and assemblies to be dispatched. Actuals is the realized view: billing and assemblies already dispatched. Right now the page is in ${mode} mode with ${filtersText}.`;
   }
 
   const monthToken = extractMonthToken(question);
   if (monthToken && lowerQuestion.includes("assembl")) {
-    const monthRow = monthlyBreakdown.find(
-      (row) => String(row.month).toLowerCase() === monthToken.toLowerCase(),
-    );
-
+    const monthRow = monthlyBreakdown.find(row => String(row.month).toLowerCase() === monthToken.toLowerCase());
     if (monthRow) {
-      const assemblyLabel =
-        mode === "forecast" ? "assemblies to be dispatched" : "assemblies dispatched";
-      return `On the current ${mode} view, ${monthRow.month} shows ${monthRow.assemblies} ${assemblyLabel}. That view also covers ${monthRow.projects} projects and about Rs. ${monthRow.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr in billing. Active filters: ${filtersText}.`;
+      const assemblyLabel = mode === "forecast" ? "assemblies to be dispatched" : "assemblies dispatched";
+      return `On the current ${mode} view, ${monthRow.month} shows ${monthRow.assemblies} ${assemblyLabel}. That view also covers ${monthRow.projects} projects and about Rs. ${monthRow.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr in billing.`;
     }
-
-    return `I do not see ${monthToken} in the current dashboard snapshot on this page. Active filters right now are: ${filtersText}.`;
-  }
-
-  if (
-    lowerQuestion.includes("assemblies to be dispatched") ||
-    lowerQuestion.includes("assemblies dispatched") ||
-    lowerQuestion === "assemblies to be dispatched" ||
-    lowerQuestion === "assemblies dispatched"
-  ) {
-    return `The current ${mode} view shows ${dashboard.kpis?.assemblies || "no assembly count"} on the page. Active filters: ${filtersText}.`;
-  }
-
-  if (
-    topLeader &&
-    (
-      (asksRevenue && asksTopPerformer) ||
-      lowerQuestion === "who s the top performer" ||
-      lowerQuestion === "who is the top performer" ||
-      lowerQuestion === "top performer in revenue" ||
-      lowerQuestion === "top performer" ||
-      (asksRevenue && recentTopPerformerContext) ||
-      (recentTopPerformerContext && lowerQuestion === "i am talking about revenue")
-    )
-  ) {
-    return `Based on the current ${mode} view, the top performer in revenue is ${topLeader.pm}, at about Rs. ${topLeader.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr. Active filters: ${filtersText}.`;
-  }
-
-  if (topLeader && leaderNameLower && lowerQuestion === leaderNameLower) {
-    return `Yes. Based on the current ${mode} view, ${topLeader.pm} is leading revenue at about Rs. ${topLeader.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr.`;
-  }
-
-  if (topLeader && leaderNameLower && lowerQuestion === `${leaderNameLower} `) {
-    return `Yes. Based on the current ${mode} view, ${topLeader.pm} is leading revenue at about Rs. ${topLeader.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr.`;
-  }
-
-  if (topLeader && isAcknowledgement && recentTopPerformerContext) {
-    return `Right. On the current ${mode} view, ${topLeader.pm} is the top revenue performer at about Rs. ${topLeader.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr.`;
+    return `I do not see ${monthToken} in the current dashboard snapshot on this page.`;
   }
 
   if (asksTopPerformer && topLeader) {
-    return `On the current ${mode} view, the top performer by billing is ${topLeader.pm}, at about Rs. ${topLeader.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr. Active filters: ${filtersText}.`;
+    return `Based on the current ${mode} view, the top performer in revenue is ${topLeader.pm}, at about Rs. ${topLeader.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr.`;
   }
 
-  if (asksTopProject) {
-    if (topVisibleProjects.length > 0) {
-      const leader = topVisibleProjects[0];
-      return `The top visible project right now is ${leader.name}, handled by ${leader.pm}, with about Rs. ${leader.totalBillingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr.`;
-    }
+  if (asksProjectCount && dashboard.kpis?.projects) {
+    return `The page currently shows ${dashboard.kpis.projects} projects under ${mode} mode.`;
   }
 
-  if (
-    includesAny(lowerQuestion, [
-      "all project number",
-      "all project numbers",
-      "all project names",
-      "list all projects",
-      "show all projects",
-    ])
-  ) {
-    if (visibleProjectNames.length > 0) {
-      const projectList = visibleProjectNames.join(", ");
-      return `I can list the currently visible projects on this ${mode} view. Total visible projects: ${visibleProjectNames.length}. Projects: ${projectList}.`;
-    }
-
-    if (dashboard.kpis?.projects) {
-      return `The page currently shows ${dashboard.kpis.projects} projects, but I do not have the visible project-name list in this snapshot.`;
-    }
-  }
-
-  if (lowerQuestion.includes("revenue") || lowerQuestion.includes("billing value")) {
-    if (dashboard.kpis?.billing) {
-      return `The page currently shows billing at ${dashboard.kpis.billing}. Active filters: ${filtersText}.`;
-    }
-  }
-
-  if (asksProjectCount) {
-    if (dashboard.kpis?.projects) {
-      return `The page currently shows ${dashboard.kpis.projects} projects. Active filters: ${filtersText}.`;
-    }
-  }
-
-  if (asksAverageMonthly) {
-    if (dashboard.kpis?.averageMonthly) {
-      return `The current average monthly value on this page is ${dashboard.kpis.averageMonthly}. Active filters: ${filtersText}.`;
-    }
+  if (asksAverageMonthly && dashboard.kpis?.averageMonthly) {
+    return `The current average monthly value on this page is ${dashboard.kpis.averageMonthly}.`;
   }
 
   if (asksPageSummary) {
-    return `This page is the ${dashboard.title || "dashboard"} for YOGIJI DIGI. It is currently showing the ${mode} view with ${dashboard.kpis?.projects || "0"} projects, billing of ${dashboard.kpis?.billing || "no billing value"}, ${dashboard.kpis?.assemblies || "no assembly count"} assemblies, and an average monthly value of ${dashboard.kpis?.averageMonthly || "no average monthly value"}. Active filters: ${filtersText}.`;
+    return `This page is the Sales & Cash Flow dashboard for YOGIJI DIGI. It is currently showing the ${mode} view with ${dashboard.kpis?.projects || "0"} projects and billing of ${dashboard.kpis?.billing || "no billing value"}. Active filters: ${filtersText}.`;
   }
 
   return "";
+}
+
+function getSemanticSuggestions(mode, filters, selection) {
+  const suggestions = [];
+  if (mode === "forecast") {
+    suggestions.push("How many assemblies to be dispatched?");
+    suggestions.push("Show top 5 PMs for FY26-27");
+  } else {
+    suggestions.push("What is the actual revenue so far?");
+    suggestions.push("Monthly revenue trend");
+  }
+  
+  if (filters?.months?.length > 0) {
+    suggestions.push("Clear all filters");
+  } else {
+    suggestions.push("Show April/26 forecast");
+  }
+  
+  suggestions.push("Export this view to Excel");
+  return suggestions.slice(0, 4);
 }
 
 function humanizeProviderError(rawMessage, statusCode) {
@@ -764,10 +731,12 @@ module.exports = async (req, res) => {
     });
   }
 
-  const structuredReply = getStructuredDashboardReply(lastUserMessage?.content || "", context, messages);
-  if (structuredReply) {
+  const structuredResult = getStructuredDashboardReply(lastUserMessage?.content || "", context, messages);
+  if (structuredResult) {
+    const isObject = typeof structuredResult === "object" && structuredResult !== null;
     return res.status(200).json({
-      reply: structuredReply,
+      reply: isObject ? structuredResult.reply : structuredResult,
+      suggestions: isObject ? structuredResult.suggestions : [],
       source: "structured-context",
     });
   }

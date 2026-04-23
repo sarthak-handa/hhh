@@ -21,6 +21,7 @@
     loading: false,
     messages: [],
     refs: {},
+    currentSuggestions: [...SUGGESTIONS],
   };
 
   function safeJsonParse(value, fallback) {
@@ -58,10 +59,14 @@
           : "actuals",
       kpis: {
         projects: document.getElementById("kpi-projects")?.innerText || "",
-        billing: document.getElementById("kpi-revenue")?.innerText || "",
+        revenue: document.getElementById("kpi-revenue")?.innerText || "",
         assemblies: document.getElementById("kpi-assemblies")?.innerText || "",
         averageMonthly: document.getElementById("kpi-avg")?.innerText || "",
       },
+      currentFilters: {
+        months: window.state?.filters?.month || [],
+        status: window.state?.filters?.status || "all",
+      }
     };
   }
 
@@ -115,7 +120,29 @@
     const card = document.createElement("div");
     const bubble = document.createElement("div");
     bubble.className = "ydc-bubble";
-    bubble.textContent = message.content;
+    
+    // Check if content is JSON for a card
+    if (message.role === "assistant" && message.content.startsWith("{") && message.content.endsWith("}")) {
+      try {
+        const data = JSON.parse(message.content);
+        if (data.type === "kpi_card") {
+          bubble.innerHTML = `
+            <div class="ydc-data-card">
+              <div class="ydc-card-title">${data.title}</div>
+              <div class="ydc-card-value">${data.value}</div>
+              ${data.subtitle ? `<div class="ydc-card-subtitle">${data.subtitle}</div>` : ""}
+              ${data.action ? `<button onclick="${data.action.code}" class="ydc-card-action">${data.action.label}</button>` : ""}
+            </div>
+          `;
+        } else {
+          bubble.textContent = message.content;
+        }
+      } catch (e) {
+        bubble.textContent = message.content;
+      }
+    } else {
+      bubble.textContent = message.content;
+    }
 
     const meta = document.createElement("div");
     meta.className = "ydc-meta";
@@ -243,11 +270,31 @@
       throw new Error(data.message || data.error || "The assistant did not respond correctly.");
     }
 
-    if (!data.reply || typeof data.reply !== "string") {
-      throw new Error("The assistant returned an empty answer.");
+    if (data.suggestions && Array.isArray(data.suggestions)) {
+      state.currentSuggestions = data.suggestions;
+      renderSuggestions();
     }
 
     return data.reply.trim();
+  }
+
+  function renderSuggestions() {
+    const container = state.refs.suggestionsContainer;
+    if (!container) return;
+    
+    container.innerHTML = state.currentSuggestions.map(
+      (suggestion) => `
+        <button type="button" class="ydc-suggestion" data-ydc-suggestion data-prompt="${suggestion}">
+          ${suggestion}
+        </button>
+      `
+    ).join("");
+    
+    // Re-bind click events
+    state.refs.suggestions = Array.from(container.querySelectorAll("[data-ydc-suggestion]"));
+    state.refs.suggestions.forEach((button) => {
+      button.onclick = () => submitPrompt(button.dataset.prompt || button.textContent || "");
+    });
   }
 
   async function submitPrompt(promptText) {
@@ -337,7 +384,8 @@
       textarea: root.querySelector("[data-ydc-textarea]"),
       send: root.querySelector("[data-ydc-send]"),
       messages: root.querySelector("[data-ydc-messages]"),
-      suggestions: Array.from(root.querySelectorAll("[data-ydc-suggestion]")),
+      suggestionsContainer: root.querySelector("[data-ydc-suggestions-container]"),
+      suggestions: [],
       typing: null,
     };
   }
@@ -382,14 +430,8 @@
         </header>
 
         <div class="ydc-body">
-          <div class="ydc-suggestions">
-            ${SUGGESTIONS.map(
-              (suggestion) => `
-                <button type="button" class="ydc-suggestion" data-ydc-suggestion data-prompt="${suggestion}">
-                  ${suggestion}
-                </button>
-              `,
-            ).join("")}
+          <div class="ydc-suggestions" data-ydc-suggestions-container>
+            <!-- Suggestions will be rendered here -->
           </div>
 
           <div class="ydc-messages" data-ydc-messages></div>
@@ -434,9 +476,10 @@
         content: INITIAL_MESSAGE,
         createdAt: new Date().toISOString(),
       });
-      saveMessages();
+    saveMessages();
     }
 
+    renderSuggestions();
     renderMessages();
     autoResizeTextarea();
     state.initialized = true;

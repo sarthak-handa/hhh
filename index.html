@@ -31,6 +31,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <link href="assets/yd-chat.css" rel="stylesheet" />
     <script defer src="assets/yd-chat.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <style>
 /**
 * Template Name: Scout
@@ -3907,6 +3908,49 @@ body {
         border: 1px solid rgba(34, 197, 94, 0.3);
         padding: 4px 8px; text-align: center; border-radius: 5px; font-weight: 600;
       }
+
+      /* Side Panel / Drawer */
+      .side-panel {
+        position: fixed;
+        top: 0;
+        right: -450px;
+        width: 450px;
+        height: 100vh;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(20px);
+        box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+        z-index: 1050;
+        transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border-left: 1px solid rgba(255,255,255,0.1);
+        display: flex;
+        flex-direction: column;
+      }
+      .side-panel.open {
+        right: 0;
+      }
+      .side-panel-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .side-panel-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+      }
+      .dark .side-panel {
+        background: #0f172a;
+      }
+      .light .side-panel {
+        background: #ffffff;
+        color: #1e293b;
+        border-left: 1px solid #e2e8f0;
+      }
+      @media (max-width: 500px) {
+        .side-panel { width: 100%; right: -100%; }
+      }
     </style>
     <script>
       tailwind.config = {
@@ -4058,6 +4102,32 @@ body {
         <div
           class="flex flex-wrap gap-3 w-full xl:w-auto justify-end bg-white dark:glass-panel p-3 rounded-lg shadow-sm border border-gray-200 dark:border-slate-800 transition-colors"
         >
+          <!-- Bookmarks / Saved Views -->
+          <div class="flex flex-col relative">
+            <label class="text-[10px] font-bold text-gray-500 dark:text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Saved Views</label>
+            <div class="flex gap-1">
+              <button
+                id="bookmarksBtn"
+                onclick="toggleBookmarksDropdown()"
+                class="bg-gray-50 border border-gray-200 text-gray-800 dark:border-gray-200 dark:border-slate-700 dark:bg-[rgba(15,23,42,0.8)] dark:text-slate-100 text-sm rounded-md focus:ring-yogi-red focus:border-yogi-red dark:focus:ring-sky-400 dark:focus:border-sky-400 block w-32 p-2 text-left flex justify-between items-center transition-colors"
+              >
+                <span id="bookmarkBtnText">Default</span>
+                <i class="fa-solid fa-bookmark text-[10px] text-gray-400"></i>
+              </button>
+              <button 
+                onclick="saveCurrentView()"
+                title="Save current filters"
+                class="bg-sky-500 hover:bg-sky-600 text-white p-2 rounded-md transition-colors flex items-center justify-center"
+                style="width: 38px; height: 38px;"
+              >
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+            <div id="bookmarksDropdown" class="hidden absolute top-[60px] right-0 z-50 w-48 bg-white dark:glass-panel shadow-lg border border-gray-200 dark:border-slate-700 rounded-md max-h-60 overflow-y-auto custom-scroll p-1">
+              <div id="bookmarksList" class="flex flex-col gap-1"></div>
+            </div>
+          </div>
+
           <div class="flex flex-col" id="dispatch-status-container">
             <label
               class="text-[10px] font-bold text-gray-500 dark:text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1"
@@ -4120,7 +4190,15 @@ body {
               onclick="generateRankedMonthPDF()"
               class="bg-yogi-red hover:bg-red-800 text-white dark:bg-sky-500 dark:hover:bg-sky-400 dark:text-slate-900 px-4 py-2 rounded-md text-sm font-bold transition h-[38px] flex items-center gap-2 dark:shadow-[0_0_10px_rgba(56,189,248,0.4)]"
             >
-              <i class="fa-solid fa-file-pdf"></i> Export Report
+              <i class="fa-solid fa-file-pdf"></i> PDF
+            </button>
+          </div>
+          <div class="flex items-end">
+            <button
+              onclick="exportToExcel()"
+              class="bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-slate-900 px-4 py-2 rounded-md text-sm font-bold transition h-[38px] flex items-center gap-2 shadow-sm"
+            >
+              <i class="fa-solid fa-file-excel"></i> Excel
             </button>
           </div>
         </div>
@@ -4388,6 +4466,22 @@ body {
       fetchUnreadCount();
     </script>
 
+    <!-- Side Panel for Drillthrough -->
+    <div id="sidePanel" class="side-panel">
+      <div class="side-panel-header">
+        <div>
+          <h2 id="panelTitle" class="text-xl font-bold text-sky-400">Project Details</h2>
+          <p id="panelSubtitle" class="text-xs text-slate-400 uppercase tracking-widest mt-1">Summary Overview</p>
+        </div>
+        <button onclick="closeSidePanel()" class="text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-xmark text-2xl"></i>
+        </button>
+      </div>
+      <div class="side-panel-body custom-scroll" id="panelBody">
+        <!-- Dynamic Content -->
+      </div>
+    </div>
+
     <script>
       let database = [];
       // const loader = document.getElementById("loader"); // Replaced by matrixLoader system
@@ -4515,12 +4609,70 @@ body {
         expandedRows: [],
         sort: { key: "billing", direction: "desc" },
         assemblySort: "default",
+        bookmarks: [],
       };
+
+      function saveStateToUrl() {
+        const params = new URLSearchParams();
+        params.set("mode", state.context);
+        if (state.filters.month.length > 0) params.set("months", state.filters.month.join(","));
+        if (state.filters.status) params.set("status", state.filters.status);
+        if (state.selection.pm) params.set("pm", state.selection.pm);
+        if (state.selection.product) params.set("product", state.selection.product);
+        if (state.selection.month) params.set("sel_month", state.selection.month);
+        
+        const newUrl = window.location.pathname + "?" + params.toString();
+        window.history.replaceState(null, "", newUrl);
+      }
+
+      function loadStateFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("mode")) state.context = params.get("mode");
+        if (params.has("months")) state.filters.month = params.get("months").split(",");
+        if (params.has("status")) state.filters.status = params.get("status");
+        if (params.has("pm")) state.selection.pm = params.get("pm");
+        if (params.has("product")) state.selection.product = params.get("product");
+        if (params.has("sel_month")) state.selection.month = params.get("sel_month");
+      }
+
+      function syncUiWithState() {
+        // Sync context buttons
+        const forBtn = document.getElementById("toggle-forecast");
+        const actBtn = document.getElementById("toggle-actuals");
+        const mode = state.context;
+        if (mode === "forecast") {
+          forBtn.className = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 bg-yogi-red dark:bg-rose-500 dark:shadow-[0_0_10px_rgba(244,63,94,0.4)] text-white";
+          actBtn.className = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800 dark:text-gray-500 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-gray-100 dark:hover:bg-gray-100 dark:bg-slate-800/50";
+          document.getElementById("dispatch-status-container").style.display = "flex";
+        } else {
+          actBtn.className = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 bg-yogi-red dark:bg-rose-500 dark:shadow-[0_0_10px_rgba(244,63,94,0.4)] text-white";
+          forBtn.className = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800 dark:text-gray-500 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-gray-100 dark:hover:bg-gray-100 dark:bg-slate-800/50";
+          document.getElementById("dispatch-status-container").style.display = "none";
+        }
+
+        // Sync Status Dropdown
+        const statusSelect = document.getElementById("filter-status");
+        if (statusSelect) statusSelect.value = state.filters.status || "all";
+
+        // Sync Month Text
+        const monthText = document.getElementById("monthBtnText");
+        if (monthText) {
+          monthText.innerText = state.filters.month.length === 0 ? "All Months" : `${state.filters.month.length} Selected`;
+        }
+
+        updateLabels(state.context);
+      }
 
       const charts = {};
 
       function init() {
+        loadStateFromUrl();
+        // Load bookmarks from local storage
+        state.bookmarks = JSON.parse(localStorage.getItem("yd_bookmarks") || "[]");
+        renderBookmarks();
+        
         initCharts();
+        syncUiWithState();
         loadDashboardData();
       }
 
@@ -4686,6 +4838,7 @@ body {
         renderTable(activeData);
         updateFilterChips();
         refreshAiContext(baseData, highlightData, activeData, hasSelection);
+        saveStateToUrl();
       }
 
       function updateKPIs(data) {
@@ -5271,7 +5424,7 @@ body {
           ${isExpanded ? "−" : "+"}
 </button>
 </td>
-<td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-800 dark:text-slate-200 tracking-wide">${row.name}</td>
+<td class="px-6 py-4 font-bold text-gray-800 dark:text-gray-800 dark:text-slate-200 tracking-wide cursor-pointer hover:text-sky-400 transition" onclick="openProjectDrillthrough('${row.name}')">${row.name}</td>
 <td class="px-6 py-4 text-gray-600 dark:text-gray-500 dark:text-slate-400">${row.pm}</td>
 <td class="px-6 py-4 text-right font-bold text-gray-900 dark:text-sky-400">₹${row.totalVal.toLocaleString(
             "en-IN",
@@ -5530,11 +5683,183 @@ body {
       function toggleMonthDropdown() {
         document.getElementById("monthDropdownList").classList.toggle("hidden");
       }
+
+      // --- BOOKMARK LOGIC ---
+      function toggleBookmarksDropdown() {
+        document.getElementById("bookmarksDropdown").classList.toggle("hidden");
+      }
+
+      function renderBookmarks() {
+        const list = document.getElementById("bookmarksList");
+        list.innerHTML = "";
+        
+        // Default View
+        const defaultItem = document.createElement("div");
+        defaultItem.className = "flex items-center justify-between p-2 hover:bg-slate-700/30 rounded cursor-pointer group";
+        defaultItem.innerHTML = `<span class="text-sm font-medium">Default View</span>`;
+        defaultItem.onclick = () => { resetAllFilters(); toggleBookmarksDropdown(); };
+        list.appendChild(defaultItem);
+
+        state.bookmarks.forEach((b, i) => {
+          const item = document.createElement("div");
+          item.className = "flex items-center justify-between p-2 hover:bg-slate-700/30 rounded cursor-pointer group";
+          item.innerHTML = `
+            <span class="text-sm font-medium truncate pr-2">${b.name}</span>
+            <button onclick="deleteBookmark(${i}, event)" class="opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-500 transition-opacity">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          `;
+          item.onclick = (e) => {
+            if (e.target.closest('button')) return;
+            applyBookmark(b);
+            toggleBookmarksDropdown();
+          };
+          list.appendChild(item);
+        });
+      }
+
+      function saveCurrentView() {
+        Swal.fire({
+          title: 'Save View',
+          input: 'text',
+          inputPlaceholder: 'Enter view name...',
+          showCancelButton: true,
+          confirmButtonText: 'Save',
+          background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff',
+          color: document.documentElement.classList.contains('dark') ? '#fff' : '#000',
+        }).then((result) => {
+          if (result.isConfirmed && result.value) {
+            const newBookmark = {
+              name: result.value,
+              state: JSON.parse(JSON.stringify({
+                context: state.context,
+                filters: state.filters,
+                selection: state.selection
+              }))
+            };
+            state.bookmarks.push(newBookmark);
+            localStorage.setItem("yd_bookmarks", JSON.stringify(state.bookmarks));
+            renderBookmarks();
+            Swal.fire({ icon: 'success', title: 'View Saved', timer: 1500, showConfirmButton: false });
+          }
+        });
+      }
+
+      function applyBookmark(b) {
+        state.context = b.state.context;
+        state.filters = b.state.filters;
+        state.selection = b.state.selection;
+        document.getElementById("bookmarkBtnText").innerText = b.name;
+        syncUiWithState();
+        updateDashboard();
+      }
+
+      function deleteBookmark(index, e) {
+        e.stopPropagation();
+        state.bookmarks.splice(index, 1);
+        localStorage.setItem("yd_bookmarks", JSON.stringify(state.bookmarks));
+        renderBookmarks();
+      }
+
+      // --- DRILLTHROUGH LOGIC ---
+      function openProjectDrillthrough(projectName) {
+        const project = window.currentTableData.find(p => p.name === projectName);
+        if (!project) return;
+
+        const panel = document.getElementById("sidePanel");
+        const body = document.getElementById("panelBody");
+        document.getElementById("panelTitle").innerText = project.name;
+        document.getElementById("panelSubtitle").innerText = project.pm;
+
+        let itemsHtml = project.items.map(i => `
+          <div class="p-3 mb-2 rounded border border-slate-700/50 bg-slate-800/30">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-sm font-bold text-slate-200">${i.assembly || '—'}</span>
+              <span class="${i.status === 'Dispatched' ? 'text-emerald-400' : 'text-rose-400'} text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-white/5 border border-white/10">
+                ${i.status}
+              </span>
+            </div>
+            <div class="flex justify-between text-xs text-slate-400">
+              <span>Month: ${i.monthDisplay || (i.month + '/' + (i.year || '').slice(-2))}</span>
+              <span class="font-bold text-sky-300">₹${i.val.toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+        `).join('');
+
+        body.innerHTML = `
+          <div class="grid grid-cols-2 gap-3 mb-6">
+            <div class="glass-panel p-3 rounded text-center border border-white/5">
+              <p class="text-[10px] text-slate-400 uppercase mb-1">Total Billing</p>
+              <p class="text-lg font-bold text-sky-400">₹${(project.totalVal / 10000000).toFixed(2)} Cr</p>
+            </div>
+            <div class="glass-panel p-3 rounded text-center border border-white/5">
+              <p class="text-[10px] text-slate-400 uppercase mb-1">Assemblies</p>
+              <p class="text-lg font-bold text-rose-400">${project.items.length}</p>
+            </div>
+          </div>
+          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 border-b border-white/10 pb-2">Itemized Breakdown</h4>
+          ${itemsHtml}
+          <div class="mt-6">
+             <button onclick="generateProjectPDF('proj_${window.currentTableData.indexOf(project)}')" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-lg transition-all shadow-lg shadow-rose-500/20">
+               <i class="fa-solid fa-file-pdf mr-2"></i> Full Project Report
+             </button>
+          </div>
+        `;
+
+        panel.classList.add("open");
+      }
+
+      function closeSidePanel() {
+        document.getElementById("sidePanel").classList.remove("open");
+      }
+
+      // --- EXCEL EXPORT ---
+      function exportToExcel() {
+        if (!window.currentTableData || window.currentTableData.length === 0) {
+          Swal.fire('No Data', 'There is no data to export with current filters.', 'warning');
+          return;
+        }
+
+        const data = [];
+        window.currentTableData.forEach(proj => {
+          proj.items.forEach(item => {
+            data.push({
+              'Project': proj.name,
+              'Manager': proj.pm,
+              'Assembly': item.assembly || '—',
+              'Month': item.monthDisplay || (item.month + '/' + (item.year || '').slice(-2)),
+              'Status': item.status,
+              'Source': item.source,
+              'Value (INR)': item.val
+            });
+          });
+        });
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Dashboard Data");
+        
+        // Auto-size columns
+        const colWidths = Object.keys(data[0] || {}).map(key => ({ 
+          wch: Math.max(key.length, ...data.map(r => String(r[key]).length)) + 2 
+        }));
+        ws['!cols'] = colWidths;
+
+        const filename = `YD_Data_Export_${state.context}_${new Date().toISOString().slice(0,10)}.xlsx`;
+        XLSX.writeFile(wb, filename);
+        Swal.fire({ icon: 'success', title: 'Exported!', text: `Data saved to ${filename}`, timer: 2000, showConfirmButton: false });
+      }
+
       window.addEventListener("click", (e) => {
         const btn = document.getElementById("monthDropdownBtn");
         const list = document.getElementById("monthDropdownList");
-        if (!btn.contains(e.target) && !list.contains(e.target))
+        if (btn && list && !btn.contains(e.target) && !list.contains(e.target))
           list.classList.add("hidden");
+        
+        const bBtn = document.getElementById("bookmarksBtn");
+        const bList = document.getElementById("bookmarksDropdown");
+        if (bBtn && bList && !bBtn.contains(e.target) && !bList.contains(e.target))
+          bList.classList.add("hidden");
       });
 
       document.addEventListener("DOMContentLoaded", init);
