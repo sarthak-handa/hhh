@@ -4851,6 +4851,7 @@ body {
             monthlyBreakdown: buildAiMonthlyBreakdown(activeData),
             topProjectManagers: buildAiPmSummary(activeData),
             topVisibleProjects: buildAiProjectSummary(currentProjects),
+            visibleProjectNames: currentProjects.map((project) => project.name).slice(0, 80),
             charts: {
               billingByPm: buildAiChartPreview(charts.bar, 8),
               distribution: buildAiChartPreview(charts.pie, 8),

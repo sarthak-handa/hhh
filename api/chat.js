@@ -177,6 +177,53 @@ function includesAny(text, phrases) {
   return phrases.some((phrase) => text.includes(phrase));
 }
 
+function isGreeting(text) {
+  return /^(hi+|hello+|hey+|heya+|good morning|good afternoon|good evening|namaste|yo+)$/.test(text);
+}
+
+function isThanks(text) {
+  return /^(thanks?|thank you|thx|great|awesome|perfect)$/.test(text);
+}
+
+function isFarewell(text) {
+  return /^(bye|goodbye|see you|see ya|talk later)$/.test(text);
+}
+
+function isLikelyNoise(text) {
+  if (!text) return true;
+  if (text.length <= 2) return true;
+  if (isGreeting(text) || isThanks(text) || isFarewell(text)) return false;
+  if (text.includes(" ") || text.includes("/")) return false;
+  if (/\d/.test(text)) return false;
+  if (text.length > 8) return false;
+  if (/(.)\1{3,}/.test(text)) return true;
+  const vowels = (text.match(/[aeiou]/g) || []).length;
+  const consonants = (text.match(/[bcdfghjklmnpqrstvwxyz]/g) || []).length;
+  return consonants >= 3 && vowels <= 2;
+}
+
+function getStructuredConversationReply(question) {
+  const lowerQuestion = normalizeQuestionText(question);
+
+  if (isGreeting(lowerQuestion)) {
+    return "Hello. I am here and ready to help. You can ask me about the live dashboard, YOGIJI DIGI, projects, KPIs, leadership, workflows, or general questions.";
+  }
+
+  if (isThanks(lowerQuestion)) {
+    return "You are welcome. If you want, I can also break down the current dashboard, compare forecast vs actuals, or answer company-specific questions.";
+  }
+
+  if (isFarewell(lowerQuestion)) {
+    return "All right. If you need anything else about the dashboard or YOGIJI DIGI, I am here.";
+  }
+
+  if (isLikelyNoise(lowerQuestion)) {
+    return "I did not catch that clearly. Please rephrase your question, and I will help. You can ask things like monthly assemblies, top revenue performer, project lists, leadership, or workflow details.";
+  }
+
+  return "";
+}
+
 function getStructuredCompanyReply(question) {
   const lowerQuestion = normalizeQuestionText(question);
 
@@ -417,6 +464,9 @@ function getStructuredDashboardReply(question, context, messages) {
   const topVisibleProjects = Array.isArray(dashboard.topVisibleProjects)
     ? dashboard.topVisibleProjects
     : [];
+  const visibleProjectNames = Array.isArray(dashboard.visibleProjectNames)
+    ? dashboard.visibleProjectNames
+    : [];
   const mode = dashboard.mode || "forecast";
   const filtersText = formatActiveFilters(dashboard.filters, dashboard.selection);
   const topLeader = topProjectManagers[0] || null;
@@ -532,6 +582,25 @@ function getStructuredDashboardReply(question, context, messages) {
     }
   }
 
+  if (
+    includesAny(lowerQuestion, [
+      "all project number",
+      "all project numbers",
+      "all project names",
+      "list all projects",
+      "show all projects",
+    ])
+  ) {
+    if (visibleProjectNames.length > 0) {
+      const projectList = visibleProjectNames.join(", ");
+      return `I can list the currently visible projects on this ${mode} view. Total visible projects: ${visibleProjectNames.length}. Projects: ${projectList}.`;
+    }
+
+    if (dashboard.kpis?.projects) {
+      return `The page currently shows ${dashboard.kpis.projects} projects, but I do not have the visible project-name list in this snapshot.`;
+    }
+  }
+
   if (lowerQuestion.includes("revenue") || lowerQuestion.includes("billing value")) {
     if (dashboard.kpis?.billing) {
       return `The page currently shows billing at ${dashboard.kpis.billing}. Active filters: ${filtersText}.`;
@@ -551,10 +620,45 @@ function getStructuredDashboardReply(question, context, messages) {
   }
 
   if (asksPageSummary) {
-    return `This page is the ${dashboard.title || "dashboard"} for YOGIJI DIGI. It is currently showing the ${mode} view with ${dashboard.kpis?.projects || "0"} projects, ${dashboard.kpis?.billing || "no billing value"}, ${dashboard.kpis?.assemblies || "no assembly count"}, and ${dashboard.kpis?.averageMonthly || "no average monthly value"}. Active filters: ${filtersText}.`;
+    return `This page is the ${dashboard.title || "dashboard"} for YOGIJI DIGI. It is currently showing the ${mode} view with ${dashboard.kpis?.projects || "0"} projects, billing of ${dashboard.kpis?.billing || "no billing value"}, ${dashboard.kpis?.assemblies || "no assembly count"} assemblies, and an average monthly value of ${dashboard.kpis?.averageMonthly || "no average monthly value"}. Active filters: ${filtersText}.`;
   }
 
   return "";
+}
+
+function humanizeProviderError(rawMessage, statusCode) {
+  const message = String(rawMessage || "").toLowerCase();
+
+  if (
+    statusCode === 429 ||
+    includesAny(message, [
+      "quota exceeded",
+      "rate limit",
+      "too many requests",
+      "free tier requests",
+      "retry in",
+    ])
+  ) {
+    return "The assistant is temporarily busy right now. Please wait a few seconds and try again.";
+  }
+
+  if (
+    includesAny(message, [
+      "high demand",
+      "overloaded",
+      "service unavailable",
+      "currently unavailable",
+      "temporarily unavailable",
+    ])
+  ) {
+    return "The assistant is seeing heavy traffic right now. Please try again in a few seconds.";
+  }
+
+  if (includesAny(message, ["timed out", "timeout", "network", "socket hang up"])) {
+    return "The assistant took too long to respond. Please try again.";
+  }
+
+  return "The assistant ran into a temporary issue. Please try again in a moment.";
 }
 
 async function requestGemini(messages, context) {
@@ -644,6 +748,14 @@ module.exports = async (req, res) => {
   }
 
   const lastUserMessage = getLastUserMessage(messages);
+  const conversationReply = getStructuredConversationReply(lastUserMessage?.content || "");
+  if (conversationReply) {
+    return res.status(200).json({
+      reply: conversationReply,
+      source: "structured-conversation",
+    });
+  }
+
   const companyReply = getStructuredCompanyReply(lastUserMessage?.content || "");
   if (companyReply) {
     return res.status(200).json({
@@ -686,7 +798,7 @@ module.exports = async (req, res) => {
 
     return res.status(statusCode).json({
       error: "Assistant request failed",
-      message: apiMessage,
+      message: humanizeProviderError(apiMessage, statusCode),
     });
   }
 };

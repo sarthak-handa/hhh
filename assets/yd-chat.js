@@ -273,10 +273,7 @@
       pushMessage("assistant", reply);
     } catch (error) {
       hideTypingIndicator();
-      pushMessage(
-        "assistant",
-        `I hit a temporary assistant issue. ${error.message} Please try again in a moment.`,
-      );
+      pushMessage("assistant", error.message || "The assistant ran into a temporary issue. Please try again in a moment.");
     } finally {
       setComposerLoading(false);
     }
