@@ -335,7 +335,7 @@ function getStructuredDashboardReply(question, context) {
 
 async function requestGemini(messages, context) {
   if (!GEMINI_API_KEY) {
-    throw new Error("The assistant is not configured for Gemini yet.");
+    throw new Error("The assistant is not configured on the server yet.");
   }
 
   const response = await axios.post(
@@ -354,7 +354,7 @@ async function requestGemini(messages, context) {
 
 async function requestOpenAI(messages, context) {
   if (!OPENAI_API_KEY) {
-    throw new Error("The assistant is not configured for OpenAI yet.");
+    throw new Error("The assistant is not configured on the server yet.");
   }
 
   const response = await axios.post(
@@ -396,7 +396,7 @@ module.exports = async (req, res) => {
   if (!GEMINI_API_KEY && !OPENAI_API_KEY) {
     return res.status(500).json({
       error: "Missing AI credentials",
-      message: "Add GEMINI_API_KEY or OPENAI_API_KEY to your server environment.",
+      message: "Add an AI API key to your server environment.",
     });
   }
 
