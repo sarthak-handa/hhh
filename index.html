@@ -5845,9 +5845,37 @@ body {
         }));
         ws['!cols'] = colWidths;
 
-        const filename = `YD_Data_Export_${state.context}_${new Date().toISOString().slice(0,10)}.xlsx`;
-        XLSX.writeFile(wb, filename);
-        Swal.fire({ icon: 'success', title: 'Exported!', text: `Data saved to ${filename}`, timer: 2000, showConfirmButton: false });
+        const filename = `YD_Data_Export_${state.context}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+        
+        // Manual download trigger for better filename support across managed browsers
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+        function s2ab(s) {
+          const buf = new ArrayBuffer(s.length);
+          const view = new Uint8Array(buf);
+          for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+          return buf;
+        }
+
+        const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+
+        Swal.fire({ 
+          icon: 'success', 
+          title: 'Exported!', 
+          text: `Downloaded: ${filename}`, 
+          timer: 2000, 
+          showConfirmButton: false 
+        });
       }
 
       window.addEventListener("click", (e) => {
@@ -6077,7 +6105,20 @@ body {
         const fileName = isForecast
           ? `Forecast_Report_${dateRangeText.replace(/ /g, "_")}.pdf`
           : `Actual_Report_${dateRangeText.replace(/ /g, "_")}.pdf`;
-        doc.save(fileName);
+        
+        // Manual download trigger for better filename support in managed environments
+        const pdfOutput = doc.output('blob');
+        const url = URL.createObjectURL(pdfOutput);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        
+        setTimeout(() => {
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        }, 100);
       }
       function dateNtime(isoDate) {
         return new Date(isoDate).toLocaleString("en-IN", {
