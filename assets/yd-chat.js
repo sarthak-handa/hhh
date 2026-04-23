@@ -1,15 +1,18 @@
 (function () {
   const ROOT_ID = "ydc-root";
-  const STORAGE_KEY = "yd_ai_chat_history_v1";
+  const STORAGE_KEY = "yd_insights_chat_history_v2";
   const MAX_MESSAGES = 20;
   const MAX_CONTEXT_MESSAGES = 12;
+  const ASSISTANT_NAME = "YD Insights";
+  const PANEL_TITLE = "YD Insights Copilot";
+  const PANEL_SUBTITLE = "Live website and business assistant";
   const SUGGESTIONS = [
-    "Summarize this page for me",
-    "Explain forecast vs actuals",
-    "Help me analyze my business",
+    "What does this dashboard show?",
+    "How many assemblies are in Apr/26?",
+    "Which PM has the highest billing?",
   ];
   const INITIAL_MESSAGE =
-    "Hi, I am your YD AI Assistant. Ask me anything about this website, your dashboard, business questions, or general knowledge.";
+    "Hello. I am YD Insights Copilot. I can answer questions about YOGIJI DIGI, the live dashboard on this page, your projects, KPIs, filters, and general questions.";
 
   const state = {
     initialized: false,
@@ -27,6 +30,14 @@
     }
   }
 
+  function cloneJsonSafe(value) {
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (error) {
+      return null;
+    }
+  }
+
   function formatTime(isoString) {
     const date = isoString ? new Date(isoString) : new Date();
     return new Intl.DateTimeFormat("en-IN", {
@@ -36,15 +47,34 @@
     }).format(date);
   }
 
+  function getFallbackDashboardContext() {
+    return {
+      title: document.querySelector("h1")?.textContent?.trim() || "",
+      activeMode:
+        document.getElementById("toggle-forecast")?.className?.includes("bg-yogi-red") ||
+        document.getElementById("toggle-forecast")?.className?.includes("bg-rose-500")
+          ? "forecast"
+          : "actuals",
+      kpis: {
+        projects: document.getElementById("kpi-projects")?.innerText || "",
+        billing: document.getElementById("kpi-revenue")?.innerText || "",
+        assemblies: document.getElementById("kpi-assemblies")?.innerText || "",
+        averageMonthly: document.getElementById("kpi-avg")?.innerText || "",
+      },
+    };
+  }
+
   function getContext() {
     const firstHeading = document.querySelector("h1");
     const subHeading = document.querySelector("h2, .section-title h2, .hero p");
+    const pageSnapshot = cloneJsonSafe(window.__YD_AI_CONTEXT__ || getFallbackDashboardContext());
 
     return {
       pageTitle: document.title || "",
       pagePath: window.location.pathname || "/",
       heading: firstHeading ? firstHeading.textContent.trim() : "",
       subheading: subHeading ? subHeading.textContent.trim() : "",
+      dashboard: pageSnapshot,
     };
   }
 
@@ -82,14 +112,16 @@
     wrapper.className = `ydc-message ydc-message--${message.role}`;
 
     const card = document.createElement("div");
-
     const bubble = document.createElement("div");
     bubble.className = "ydc-bubble";
     bubble.textContent = message.content;
 
     const meta = document.createElement("div");
     meta.className = "ydc-meta";
-    meta.textContent = message.role === "assistant" ? `YD AI • ${formatTime(message.createdAt)}` : formatTime(message.createdAt);
+    meta.textContent =
+      message.role === "assistant"
+        ? `${ASSISTANT_NAME} - ${formatTime(message.createdAt)}`
+        : formatTime(message.createdAt);
 
     card.appendChild(bubble);
     card.appendChild(meta);
@@ -128,7 +160,7 @@
       state.refs.launcher.setAttribute("aria-expanded", isOpen ? "true" : "false");
       state.refs.launcher.setAttribute(
         "aria-label",
-        isOpen ? "Close YD AI Assistant" : "Open YD AI Assistant",
+        isOpen ? `Close ${PANEL_TITLE}` : `Open ${PANEL_TITLE}`,
       );
     }
 
@@ -162,7 +194,7 @@
     const wrapper = document.createElement("div");
     wrapper.className = "ydc-message ydc-message--assistant";
     wrapper.innerHTML =
-      '<div><div class="ydc-bubble"><div class="ydc-typing"><span></span><span></span><span></span></div></div><div class="ydc-meta">YD AI is thinking…</div></div>';
+      `<div><div class="ydc-bubble"><div class="ydc-typing"><span></span><span></span><span></span></div></div><div class="ydc-meta">${ASSISTANT_NAME} is thinking...</div></div>`;
 
     state.refs.typing = wrapper;
     state.refs.messages.appendChild(wrapper);
@@ -207,11 +239,11 @@
     const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      throw new Error(data.message || data.error || "The AI service did not respond correctly.");
+      throw new Error(data.message || data.error || "The assistant did not respond correctly.");
     }
 
     if (!data.reply || typeof data.reply !== "string") {
-      throw new Error("The AI service returned an empty answer.");
+      throw new Error("The assistant returned an empty answer.");
     }
 
     return data.reply.trim();
@@ -242,7 +274,7 @@
       hideTypingIndicator();
       pushMessage(
         "assistant",
-        `I hit a connection problem while talking to Gemini. ${error.message} If this is your first setup, add GEMINI_API_KEY to your server environment and redeploy.`,
+        `I hit a temporary assistant issue. ${error.message} Please try again in a moment.`,
       );
     } finally {
       setComposerLoading(false);
@@ -250,7 +282,7 @@
   }
 
   function clearConversation() {
-    const confirmed = window.confirm("Clear the YD AI chat history on this browser?");
+    const confirmed = window.confirm("Clear the chat history on this browser?");
     if (!confirmed) return;
 
     state.messages = [];
@@ -265,14 +297,7 @@
   }
 
   function bindEvents() {
-    const {
-      launcher,
-      close,
-      clear,
-      form,
-      textarea,
-      suggestions,
-    } = state.refs;
+    const { launcher, close, clear, form, textarea, suggestions } = state.refs;
 
     launcher.addEventListener("click", () => {
       setOpenState(!state.open);
@@ -330,21 +355,21 @@
         class="ydc-launcher"
         data-ydc-launcher
         aria-expanded="false"
-        aria-label="Open YD AI Assistant"
+        aria-label="Open ${PANEL_TITLE}"
       >
         <i class="fa-solid fa-comments ydc-launcher-icon-open" aria-hidden="true"></i>
         <i class="fa-solid fa-xmark ydc-launcher-icon-close" aria-hidden="true"></i>
       </button>
 
-      <section class="ydc-panel" aria-label="YD AI Assistant">
+      <section class="ydc-panel" aria-label="${PANEL_TITLE}">
         <header class="ydc-header">
           <div class="ydc-header-main">
             <div class="ydc-avatar" aria-hidden="true">
               <i class="fa-solid fa-sparkles"></i>
             </div>
             <div class="ydc-header-copy">
-              <p class="ydc-title">YD AI Assistant</p>
-              <p class="ydc-subtitle">Gemini-powered website copilot</p>
+              <p class="ydc-title">${PANEL_TITLE}</p>
+              <p class="ydc-subtitle">${PANEL_SUBTITLE}</p>
             </div>
           </div>
 
@@ -385,7 +410,7 @@
                 <i class="fa-solid fa-paper-plane"></i>
               </button>
             </div>
-            <p class="ydc-footnote">Answers are AI-generated, so verify critical business decisions.</p>
+            <p class="ydc-footnote">Live answers use the current page data whenever it is available.</p>
           </form>
         </footer>
       </section>

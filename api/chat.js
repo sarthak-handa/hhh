@@ -3,25 +3,44 @@ const axios = require("axios");
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
+
+const AI_PROVIDER =
+  process.env.AI_PROVIDER ||
+  (OPENAI_API_KEY ? "openai" : "gemini");
+
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 12;
 const requestLog = new Map();
 
 const SYSTEM_PROMPT = `
-You are YD AI Assistant for YOGIJI DIGI websites.
+You are YD Insights Copilot for YOGIJI DIGI.
 
-Your job:
-- answer general questions helpfully like a strong website AI assistant
-- help users understand the current page and dashboard when page context is provided
-- help with business, writing, coding, research, and productivity questions
-- be clear, practical, and accurate
+Your responsibilities:
+- answer like a premium business copilot and general-purpose assistant
+- help users understand the live dashboard and visible website data
+- answer company, workflow, project, KPI, and business questions clearly
+- answer broader general questions helpfully when the user asks them
+
+YOGIJI DIGI dashboard guidance:
+- "forecast" means planned billing and assemblies to be dispatched
+- "actuals" means realized billing and assemblies dispatched
+- billing values may be shown in INR crores (Cr)
+- the fiscal flow commonly runs Apr to Mar
+- common statuses include Dispatched, Not Dispatched, and Hold
+- common source types include BOI and Inhouse
 
 Rules:
-- if the user asks about the current page, rely on the provided page context
-- if you do not know a fact, say so instead of inventing it
-- do not claim to have clicked buttons, read hidden files, or performed actions you cannot actually do
-- keep answers readable and polished
-- use bullets only when they genuinely help
+- when page-specific numeric data is present in the provided dashboard snapshot, treat it as the source of truth
+- if the user asks about what is on the page, answer from the current page snapshot first
+- mention the current mode or active filters when they materially affect the answer
+- do not mention model providers unless the user asks
+- do not invent hidden data that is not present
+- if the snapshot does not contain a requested fact, say that plainly and then help with the closest available information
+- be concise, accurate, and professional
 `.trim();
 
 function tryParseJson(value) {
@@ -57,38 +76,73 @@ function normalizeMessages(messages) {
     )
     .slice(-12)
     .map((message) => ({
-      role: message.role === "assistant" ? "model" : "user",
-      parts: [{ text: clampText(message.content, 6000) }],
+      role: message.role,
+      content: clampText(message.content, 6000),
     }));
 }
 
-function buildSystemInstruction(context) {
+function getLastUserMessage(messages) {
+  const reversed = [...messages].reverse();
+  return reversed.find((message) => message.role === "user") || null;
+}
+
+function buildContextText(context) {
   const lines = [SYSTEM_PROMPT];
-
-  if (context && typeof context === "object") {
-    const contextLines = [];
-    const pageTitle = clampText(context.pageTitle, 200);
-    const pagePath = clampText(context.pagePath, 200);
-    const heading = clampText(context.heading, 200);
-    const subheading = clampText(context.subheading, 300);
-
-    if (pageTitle) contextLines.push(`Page title: ${pageTitle}`);
-    if (pagePath) contextLines.push(`Page path: ${pagePath}`);
-    if (heading) contextLines.push(`Main heading: ${heading}`);
-    if (subheading) contextLines.push(`Supporting heading: ${subheading}`);
-
-    if (contextLines.length > 0) {
-      lines.push("Current page context:");
-      lines.push(...contextLines);
-    }
+  if (!context || typeof context !== "object") {
+    return lines.join("\n");
   }
 
+  const pageTitle = clampText(context.pageTitle, 200);
+  const pagePath = clampText(context.pagePath, 200);
+  const heading = clampText(context.heading, 200);
+  const subheading = clampText(context.subheading, 300);
+
+  if (pageTitle || pagePath || heading || subheading) {
+    lines.push("");
+    lines.push("Current page context:");
+    if (pageTitle) lines.push(`Page title: ${pageTitle}`);
+    if (pagePath) lines.push(`Page path: ${pagePath}`);
+    if (heading) lines.push(`Main heading: ${heading}`);
+    if (subheading) lines.push(`Supporting heading: ${subheading}`);
+  }
+
+  if (context.dashboard) {
+    lines.push("");
+    lines.push("Live dashboard snapshot:");
+    lines.push(clampText(JSON.stringify(context.dashboard), 18000));
+  }
+
+  return lines.join("\n");
+}
+
+function buildGeminiPayload(messages, context) {
   return {
-    parts: [{ text: lines.join("\n") }],
+    systemInstruction: {
+      parts: [{ text: buildContextText(context) }],
+    },
+    contents: messages.map((message) => ({
+      role: message.role === "assistant" ? "model" : "user",
+      parts: [{ text: message.content }],
+    })),
+    generationConfig: {
+      temperature: 0.55,
+      topP: 0.9,
+      maxOutputTokens: 1024,
+    },
   };
 }
 
-function extractReply(data) {
+function buildOpenAIMessages(messages, context) {
+  return [
+    { role: "system", content: buildContextText(context) },
+    ...messages.map((message) => ({
+      role: message.role,
+      content: message.content,
+    })),
+  ];
+}
+
+function extractGeminiReply(data) {
   const parts = data?.candidates?.[0]?.content?.parts;
   if (!Array.isArray(parts)) return "";
 
@@ -96,6 +150,10 @@ function extractReply(data) {
     .map((part) => (typeof part.text === "string" ? part.text : ""))
     .join("")
     .trim();
+}
+
+function extractOpenAIReply(data) {
+  return data?.choices?.[0]?.message?.content?.trim() || "";
 }
 
 function getClientIp(req) {
@@ -122,6 +180,211 @@ function isRateLimited(clientIp) {
   return false;
 }
 
+function normalizeMonthToken(rawMonth, rawYear) {
+  const monthMap = {
+    jan: "Jan",
+    january: "Jan",
+    feb: "Feb",
+    february: "Feb",
+    mar: "Mar",
+    march: "Mar",
+    apr: "Apr",
+    april: "Apr",
+    may: "May",
+    jun: "Jun",
+    june: "Jun",
+    jul: "Jul",
+    july: "Jul",
+    aug: "Aug",
+    august: "Aug",
+    sep: "Sep",
+    sept: "Sep",
+    september: "Sep",
+    oct: "Oct",
+    october: "Oct",
+    nov: "Nov",
+    november: "Nov",
+    dec: "Dec",
+    december: "Dec",
+  };
+
+  const month = monthMap[String(rawMonth || "").toLowerCase()];
+  if (!month) return "";
+
+  const yearText = String(rawYear || "").trim();
+  const year = yearText.length === 2 ? yearText : yearText.slice(-2);
+  if (!year) return "";
+
+  return `${month}/${year}`;
+}
+
+function extractMonthToken(question) {
+  const match = String(question || "").match(
+    /\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t|tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\b[\s,/-]*(20\d{2}|\d{2})/i,
+  );
+
+  if (!match) return "";
+  return normalizeMonthToken(match[1], match[2]);
+}
+
+function formatActiveFilters(filters, selection) {
+  const parts = [];
+
+  if (Array.isArray(filters?.months) && filters.months.length > 0) {
+    parts.push(`months: ${filters.months.join(", ")}`);
+  }
+  if (filters?.status && filters.status !== "all") {
+    parts.push(`status: ${filters.status}`);
+  }
+  if (selection?.pm) parts.push(`PM: ${selection.pm}`);
+  if (selection?.product) parts.push(`product: ${selection.product}`);
+  if (selection?.month) parts.push(`month: ${selection.month}`);
+
+  return parts.length > 0 ? parts.join(" | ") : "no extra filters applied";
+}
+
+function getStructuredDashboardReply(question, context) {
+  const dashboard = context?.dashboard?.dashboard;
+  if (!dashboard || typeof dashboard !== "object") {
+    return "";
+  }
+
+  const lowerQuestion = String(question || "").toLowerCase();
+  const monthlyBreakdown = Array.isArray(dashboard.monthlyBreakdown)
+    ? dashboard.monthlyBreakdown
+    : [];
+  const topProjectManagers = Array.isArray(dashboard.topProjectManagers)
+    ? dashboard.topProjectManagers
+    : [];
+  const topVisibleProjects = Array.isArray(dashboard.topVisibleProjects)
+    ? dashboard.topVisibleProjects
+    : [];
+  const mode = dashboard.mode || "forecast";
+  const filtersText = formatActiveFilters(dashboard.filters, dashboard.selection);
+
+  if (lowerQuestion.includes("forecast") && lowerQuestion.includes("actual")) {
+    return `Forecast is the planned view: expected billing and assemblies to be dispatched. Actuals is the realized view: billing and assemblies already dispatched. Right now the page is in ${mode} mode with ${filtersText}.`;
+  }
+
+  const monthToken = extractMonthToken(question);
+  if (monthToken && lowerQuestion.includes("assembl")) {
+    const monthRow = monthlyBreakdown.find(
+      (row) => String(row.month).toLowerCase() === monthToken.toLowerCase(),
+    );
+
+    if (monthRow) {
+      const assemblyLabel =
+        mode === "forecast" ? "assemblies to be dispatched" : "assemblies dispatched";
+      return `On the current ${mode} view, ${monthRow.month} shows ${monthRow.assemblies} ${assemblyLabel}. That view also covers ${monthRow.projects} projects and about Rs. ${monthRow.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr in billing. Active filters: ${filtersText}.`;
+    }
+
+    return `I do not see ${monthToken} in the current dashboard snapshot on this page. Active filters right now are: ${filtersText}.`;
+  }
+
+  if (
+    lowerQuestion.includes("assemblies to be dispatched") ||
+    lowerQuestion.includes("assemblies dispatched") ||
+    lowerQuestion === "assemblies to be dispatched" ||
+    lowerQuestion === "assemblies dispatched"
+  ) {
+    return `The current ${mode} view shows ${dashboard.kpis?.assemblies || "no assembly count"} on the page. Active filters: ${filtersText}.`;
+  }
+
+  if (lowerQuestion.includes("highest billing pm") || lowerQuestion.includes("top pm")) {
+    if (topProjectManagers.length > 0) {
+      const leader = topProjectManagers[0];
+      return `The highest visible PM by billing on this page is ${leader.pm}, at about Rs. ${leader.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr. Active filters: ${filtersText}.`;
+    }
+  }
+
+  if (lowerQuestion.includes("top project") || lowerQuestion.includes("highest project")) {
+    if (topVisibleProjects.length > 0) {
+      const leader = topVisibleProjects[0];
+      return `The top visible project right now is ${leader.name}, handled by ${leader.pm}, with about Rs. ${leader.totalBillingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr.`;
+    }
+  }
+
+  if (lowerQuestion.includes("revenue") || lowerQuestion.includes("billing value")) {
+    if (dashboard.kpis?.billing) {
+      return `The page currently shows billing at ${dashboard.kpis.billing}. Active filters: ${filtersText}.`;
+    }
+  }
+
+  if (lowerQuestion.includes("how many projects") || lowerQuestion.includes("project count")) {
+    if (dashboard.kpis?.projects) {
+      return `The page currently shows ${dashboard.kpis.projects} projects. Active filters: ${filtersText}.`;
+    }
+  }
+
+  if (lowerQuestion.includes("average monthly")) {
+    if (dashboard.kpis?.averageMonthly) {
+      return `The current average monthly value on this page is ${dashboard.kpis.averageMonthly}. Active filters: ${filtersText}.`;
+    }
+  }
+
+  if (
+    lowerQuestion.includes("summarize this page") ||
+    lowerQuestion.includes("what does this dashboard show") ||
+    lowerQuestion.includes("what is on this page")
+  ) {
+    return `This page is the ${dashboard.title || "dashboard"} for YOGIJI DIGI. It is currently showing the ${mode} view with ${dashboard.kpis?.projects || "0"} projects, ${dashboard.kpis?.billing || "no billing value"}, ${dashboard.kpis?.assemblies || "no assembly count"}, and ${dashboard.kpis?.averageMonthly || "no average monthly value"}. Active filters: ${filtersText}.`;
+  }
+
+  return "";
+}
+
+async function requestGemini(messages, context) {
+  if (!GEMINI_API_KEY) {
+    throw new Error("The assistant is not configured for Gemini yet.");
+  }
+
+  const response = await axios.post(
+    `${GEMINI_URL}?key=${encodeURIComponent(GEMINI_API_KEY)}`,
+    buildGeminiPayload(messages, context),
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      timeout: 30000,
+    },
+  );
+
+  return extractGeminiReply(response.data);
+}
+
+async function requestOpenAI(messages, context) {
+  if (!OPENAI_API_KEY) {
+    throw new Error("The assistant is not configured for OpenAI yet.");
+  }
+
+  const response = await axios.post(
+    OPENAI_URL,
+    {
+      model: OPENAI_MODEL,
+      messages: buildOpenAIMessages(messages, context),
+      temperature: 0.55,
+      max_tokens: 1024,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+      timeout: 30000,
+    },
+  );
+
+  return extractOpenAIReply(response.data);
+}
+
+async function requestProviderReply(messages, context) {
+  if (AI_PROVIDER === "openai" && OPENAI_API_KEY) {
+    return requestOpenAI(messages, context);
+  }
+
+  return requestGemini(messages, context);
+}
+
 module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
 
@@ -130,10 +393,10 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  if (!GEMINI_API_KEY) {
+  if (!GEMINI_API_KEY && !OPENAI_API_KEY) {
     return res.status(500).json({
-      error: "Missing GEMINI_API_KEY",
-      message: "Set GEMINI_API_KEY in your server environment before using the chatbot.",
+      error: "Missing AI credentials",
+      message: "Add GEMINI_API_KEY or OPENAI_API_KEY to your server environment.",
     });
   }
 
@@ -146,49 +409,38 @@ module.exports = async (req, res) => {
   }
 
   const body = normalizeBody(req.body);
-  const contents = normalizeMessages(body.messages);
+  const messages = normalizeMessages(body.messages);
+  const context = body.context && typeof body.context === "object" ? body.context : {};
 
-  if (contents.length === 0) {
+  if (messages.length === 0) {
     return res.status(400).json({
       error: "Missing messages",
       message: "Send at least one user message to /api/chat.",
     });
   }
 
-  const payload = {
-    systemInstruction: buildSystemInstruction(body.context),
-    contents,
-    generationConfig: {
-      temperature: 0.7,
-      topP: 0.95,
-      maxOutputTokens: 1024,
-    },
-  };
+  const lastUserMessage = getLastUserMessage(messages);
+  const structuredReply = getStructuredDashboardReply(lastUserMessage?.content || "", context);
+  if (structuredReply) {
+    return res.status(200).json({
+      reply: structuredReply,
+      source: "structured-context",
+    });
+  }
 
   try {
-    const geminiResponse = await axios.post(
-      `${GEMINI_URL}?key=${encodeURIComponent(GEMINI_API_KEY)}`,
-      payload,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        timeout: 30000,
-      },
-    );
-
-    const reply = extractReply(geminiResponse.data);
+    const reply = await requestProviderReply(messages, context);
 
     if (!reply) {
       return res.status(502).json({
-        error: "Empty Gemini response",
-        message: "Gemini returned an empty answer.",
+        error: "Empty assistant response",
+        message: "The assistant returned an empty answer.",
       });
     }
 
     return res.status(200).json({
       reply,
-      model: GEMINI_MODEL,
+      source: AI_PROVIDER,
     });
   } catch (error) {
     const statusCode = error.response?.status || 500;
@@ -196,12 +448,12 @@ module.exports = async (req, res) => {
       error.response?.data?.error?.message ||
       error.response?.data?.message ||
       error.message ||
-      "Unknown Gemini error";
+      "Unknown assistant error";
 
-    console.error("Gemini chat error:", apiMessage);
+    console.error("Chat provider error:", apiMessage);
 
     return res.status(statusCode).json({
-      error: "Gemini request failed",
+      error: "Assistant request failed",
       message: apiMessage,
     });
   }

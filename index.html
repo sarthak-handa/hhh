@@ -4685,6 +4685,7 @@ body {
         updateVisuals(baseData, highlightData, hasSelection);
         renderTable(activeData);
         updateFilterChips();
+        refreshAiContext(baseData, highlightData, activeData, hasSelection);
       }
 
       function updateKPIs(data) {
@@ -4716,6 +4717,147 @@ body {
             maximumFractionDigits: 2,
           }) +
           " Cr";
+      }
+
+      function getAiMonthSortValue(label) {
+        const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const match = String(label || "").match(/^([A-Za-z]{3})\/(\d{2})$/);
+        if (!match) return Number.MAX_SAFE_INTEGER;
+
+        const monthIndex = monthOrder.indexOf(match[1]);
+        const yearValue = 2000 + parseInt(match[2], 10);
+        if (monthIndex < 0 || Number.isNaN(yearValue)) return Number.MAX_SAFE_INTEGER;
+
+        return yearValue * 100 + monthIndex;
+      }
+
+      function buildAiMonthlyBreakdown(data) {
+        const monthlyMap = new Map();
+
+        data.forEach((item) => {
+          const monthKey = item.monthDisplay || item.month || "Unknown";
+          if (!monthlyMap.has(monthKey)) {
+            monthlyMap.set(monthKey, {
+              month: monthKey,
+              assemblies: 0,
+              billing: 0,
+              projects: new Set(),
+              statuses: { Dispatched: 0, "Not Dispatched": 0, Hold: 0 },
+            });
+          }
+
+          const bucket = monthlyMap.get(monthKey);
+          if (item.assembly && String(item.assembly).trim() !== "") {
+            bucket.assemblies += 1;
+          }
+          bucket.billing += item.val || 0;
+          bucket.projects.add(item.name);
+
+          const statusKey = item.status || "Not Dispatched";
+          bucket.statuses[statusKey] = (bucket.statuses[statusKey] || 0) + 1;
+        });
+
+        return Array.from(monthlyMap.values())
+          .sort((a, b) => getAiMonthSortValue(a.month) - getAiMonthSortValue(b.month))
+          .map((bucket) => ({
+            month: bucket.month,
+            assemblies: bucket.assemblies,
+            projects: bucket.projects.size,
+            billingCr: Number((bucket.billing / 10000000).toFixed(2)),
+            statuses: bucket.statuses,
+          }));
+      }
+
+      function buildAiPmSummary(data) {
+        const pmMap = {};
+
+        data.forEach((item) => {
+          const pm = item.pm || "Unassigned";
+          pmMap[pm] = (pmMap[pm] || 0) + (item.val || 0);
+        });
+
+        return Object.entries(pmMap)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 8)
+          .map(([pm, billing]) => ({
+            pm,
+            billingCr: Number((billing / 10000000).toFixed(2)),
+          }));
+      }
+
+      function buildAiProjectSummary(projects) {
+        return projects.slice(0, 8).map((project) => ({
+          name: project.name,
+          pm: project.pm,
+          totalBillingCr: Number(((project.totalVal || 0) / 10000000).toFixed(2)),
+          assemblyCount: Array.isArray(project.items)
+            ? project.items.filter((item) => item.assembly && String(item.assembly).trim() !== "").length
+            : 0,
+          dispatchMonths: Array.from(
+            new Set(
+              (project.items || [])
+                .map((item) => item.monthDisplay || item.month || "")
+                .filter(Boolean),
+            ),
+          ).slice(0, 6),
+        }));
+      }
+
+      function buildAiChartPreview(chart, limit) {
+        if (!chart || !chart.data || !Array.isArray(chart.data.labels)) {
+          return [];
+        }
+
+        const labels = chart.data.labels.slice(0, limit);
+        const firstDataset = Array.isArray(chart.data.datasets) ? chart.data.datasets[0] : null;
+        const values = firstDataset && Array.isArray(firstDataset.data) ? firstDataset.data : [];
+
+        return labels.map((label, index) => ({
+          label,
+          value: values[index],
+        }));
+      }
+
+      function refreshAiContext(baseData, highlightData, activeData, hasSelection) {
+        const currentProjects = Array.isArray(window.currentTableData) ? window.currentTableData : [];
+
+        window.__YD_AI_CONTEXT__ = {
+          siteName: "YOGIJI DIGI",
+          application: "YD Projects",
+          dashboard: {
+            title: "Sales & Cash Flow",
+            mode: state.context,
+            filters: {
+              months: [...state.filters.month],
+              status: state.filters.status || "all",
+            },
+            selection: {
+              pm: state.selection.pm || null,
+              product: state.selection.product || null,
+              month: state.selection.month || null,
+            },
+            hasSelection: Boolean(hasSelection),
+            counts: {
+              baseRows: baseData.length,
+              highlightRows: highlightData.length,
+              visibleRows: activeData.length,
+            },
+            kpis: {
+              projects: document.getElementById("kpi-projects")?.innerText || "",
+              billing: document.getElementById("kpi-revenue")?.innerText || "",
+              assemblies: document.getElementById("kpi-assemblies")?.innerText || "",
+              averageMonthly: document.getElementById("kpi-avg")?.innerText || "",
+            },
+            monthlyBreakdown: buildAiMonthlyBreakdown(activeData),
+            topProjectManagers: buildAiPmSummary(activeData),
+            topVisibleProjects: buildAiProjectSummary(currentProjects),
+            charts: {
+              billingByPm: buildAiChartPreview(charts.bar, 8),
+              distribution: buildAiChartPreview(charts.pie, 8),
+              monthlyBilling: buildAiChartPreview(charts.line, 12),
+            },
+          },
+        };
       }
 
       // --- CHART INITIALIZATION (FIXED ROTATION HERE) ---
