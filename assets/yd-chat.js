@@ -9,10 +9,11 @@
   const SUGGESTIONS = [
     "What does this dashboard show?",
     "How many assemblies are in Apr/26?",
-    "Which PM has the highest billing?",
+    "Who is the top performer in revenue?",
+    "Who are YOGIJI DIGI leadership?",
   ];
   const INITIAL_MESSAGE =
-    "Hello. I am YD Insights Copilot. I can answer questions about YOGIJI DIGI, the live dashboard on this page, your projects, KPIs, filters, and general questions.";
+    "Hello. I am YD Insights Copilot. I can answer questions about YOGIJI DIGI, leadership, products, workflows, live dashboard numbers, projects, KPIs, filters, and general topics.";
 
   const state = {
     initialized: false,

@@ -43,6 +43,56 @@ Rules:
 - be concise, accurate, and professional
 `.trim();
 
+const COMPANY_PROFILE = `
+YOGIJI DIGI company brief:
+- Type: private industrial machinery manufacturer
+- Headquarters: Faridabad, Haryana, India
+- Industry: flat steel processing and industrial automation
+- Positioning: turnkey solution provider for downstream flat steel processing plants
+- Identity: integrated engineering company combining mechanical/process capabilities and electrical/automation integration
+
+Leadership and named business context:
+- Navneet Singh Gill: Managing Director
+- Satish Kumar Tripathi: Director
+- Sameer Bansal: Director
+- Varun Jay Rana: operations and engineering leadership context
+- Aseem Gill: business and sustainability leadership context
+
+Core product lines and offerings:
+- Cold Rolling Mills (CRM), Skin Pass Mills, Tube Mills
+- Slitting Lines, Cut-to-Length Lines, Rewinding and Trimming systems
+- Color Coating Lines (CCL), Galvanizing (GI), Galvalume (GL)
+- Pickling Lines and Acid Regeneration Plants
+- PLC, SCADA, Drives, MCC and PCC panels, automation integration
+
+Internal terminology mapping:
+- Cold Rolling Mill = CRM / 4Hi / 6Hi Mill
+- Trimming = Edge Trimmer
+- Rewinding = Tension Reel / Recoiler
+- Scrap = Scrap Chopper / Side Trimmer Scrap
+- Color Coating = CCL / PPGI Line
+- Galvanising = GI Line / Continuous Galvanizing
+- Pickling = Push-Pull Pickling Line
+- Skin Pass = Temper Mill
+- Slitting = Slitting Line
+- Electrical = MCC / PLC / Drives
+- Mill Bearing = Roll Chock / Bearing Assembly
+
+Departments and workflows:
+- Mechanical Engineering, Electrical and Automation, Process Engineering, Manufacturing, Projects/EPC, Service and Revamp, Procurement, Sales and Business Development
+- Typical workflow: Sales/RFQ -> Engineering/BOM -> Manufacturing -> Automation Integration -> Dispatch/Installation -> After-Sales
+
+Engineering language commonly used:
+- stand, reduction pass, coil break, tension zone
+- drive tuning, synchronization, master-slave control, loop control
+- AGC, AFC, elongation percentage
+- cold commissioning, hot trial, line stabilization
+
+Truthfulness rule:
+- leadership and products are treated as internal business context
+- exact private-company org chart details may not be publicly confirmed, so if asked for exact reporting lines or officially published org charts, answer carefully and distinguish confirmed detail from likely operating structure
+`.trim();
+
 function tryParseJson(value) {
   try {
     return JSON.parse(value);
@@ -87,7 +137,7 @@ function getLastUserMessage(messages) {
 }
 
 function buildContextText(context) {
-  const lines = [SYSTEM_PROMPT];
+  const lines = [SYSTEM_PROMPT, "", "Internal company knowledge:", COMPANY_PROFILE];
   if (!context || typeof context !== "object") {
     return lines.join("\n");
   }
@@ -113,6 +163,114 @@ function buildContextText(context) {
   }
 
   return lines.join("\n");
+}
+
+function normalizeQuestionText(question) {
+  return String(question || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9/ ]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function includesAny(text, phrases) {
+  return phrases.some((phrase) => text.includes(phrase));
+}
+
+function getStructuredCompanyReply(question) {
+  const lowerQuestion = normalizeQuestionText(question);
+
+  if (
+    includesAny(lowerQuestion, [
+      "where is yogiji digi",
+      "head office",
+      "headquarters",
+      "where is the company based",
+      "where are you based",
+    ])
+  ) {
+    return "YOGIJI DIGI is based in Faridabad, Haryana, India, and operates as an industrial engineering company focused on flat steel processing and automation.";
+  }
+
+  if (
+    includesAny(lowerQuestion, [
+      "who is the md",
+      "who is managing director",
+      "who leads yogiji digi",
+      "leadership",
+      "directors",
+      "leadership team",
+    ])
+  ) {
+    return "The key leadership context I have for YOGIJI DIGI is: Navneet Singh Gill as Managing Director, with Satish Kumar Tripathi and Sameer Bansal as directors. Varun Jay Rana and Aseem Gill also appear in senior business and operations context.";
+  }
+
+  if (
+    includesAny(lowerQuestion, [
+      "what does yogiji digi do",
+      "company profile",
+      "about yogiji digi",
+      "what kind of company",
+      "what is yogiji digi",
+    ])
+  ) {
+    return "YOGIJI DIGI is an integrated engineering and industrial machinery company positioned as a turnkey solution provider for downstream flat steel processing plants. Its work combines mechanical/process equipment with electrical and automation integration.";
+  }
+
+  if (
+    includesAny(lowerQuestion, [
+      "product lines",
+      "products",
+      "what do you manufacture",
+      "what machines",
+      "offerings",
+    ])
+  ) {
+    return "YOGIJI DIGI’s core offerings include Cold Rolling Mills, Skin Pass Mills, Slitting Lines, Cut-to-Length Lines, Rewinding and Trimming systems, Color Coating Lines, Galvanizing and Galvalume lines, Pickling Lines, Acid Regeneration Plants, and automation systems such as PLC, SCADA, drives, MCC, and PCC panels.";
+  }
+
+  if (
+    includesAny(lowerQuestion, [
+      "departments",
+      "teams",
+      "functions",
+      "internal departments",
+    ])
+  ) {
+    return "A realistic YOGIJI DIGI operating structure includes Mechanical Engineering, Electrical and Automation, Process Engineering, Manufacturing, Projects/EPC, Service and Revamp, Procurement, and Sales/Business Development.";
+  }
+
+  if (
+    includesAny(lowerQuestion, [
+      "workflow",
+      "internal workflow",
+      "project workflow",
+      "how does the work flow",
+      "how do projects move",
+    ])
+  ) {
+    return "A typical YOGIJI DIGI workflow is: Sales/RFQ -> technical discussion and engineering -> BOM and line design -> manufacturing and fabrication -> automation integration -> dispatch, erection, and commissioning -> after-sales support, revamp, and optimization.";
+  }
+
+  if (
+    includesAny(lowerQuestion, [
+      "what is crm",
+      "cold rolling mill",
+      "what is skin pass",
+      "what is pickling",
+      "what is galvanising",
+      "what is galvanizing",
+      "what is slitting",
+      "what is rewinding",
+      "what is trimming",
+      "what is mill bearing",
+      "what is electrical",
+    ])
+  ) {
+    return "Internal terminology maps like this: Cold Rolling Mill = CRM / 4Hi / 6Hi Mill, Skin Pass = Temper Mill, Pickling = Push-Pull Pickling Line, Galvanising = GI Line, Slitting = Slitting Line, Rewinding = Tension Reel / Recoiler, Trimming = Edge Trimmer, Electrical = MCC / PLC / Drives, and Mill Bearing = Roll Chock / Bearing Assembly.";
+  }
+
+  return "";
 }
 
 function buildGeminiPayload(messages, context) {
@@ -243,13 +401,13 @@ function formatActiveFilters(filters, selection) {
   return parts.length > 0 ? parts.join(" | ") : "no extra filters applied";
 }
 
-function getStructuredDashboardReply(question, context) {
+function getStructuredDashboardReply(question, context, messages) {
   const dashboard = context?.dashboard?.dashboard;
   if (!dashboard || typeof dashboard !== "object") {
     return "";
   }
 
-  const lowerQuestion = String(question || "").toLowerCase();
+  const lowerQuestion = normalizeQuestionText(question);
   const monthlyBreakdown = Array.isArray(dashboard.monthlyBreakdown)
     ? dashboard.monthlyBreakdown
     : [];
@@ -261,6 +419,52 @@ function getStructuredDashboardReply(question, context) {
     : [];
   const mode = dashboard.mode || "forecast";
   const filtersText = formatActiveFilters(dashboard.filters, dashboard.selection);
+  const topLeader = topProjectManagers[0] || null;
+  const recentUserMessages = Array.isArray(messages)
+    ? messages
+        .filter((message) => message.role === "user")
+        .slice(-4)
+        .map((message) => normalizeQuestionText(message.content))
+    : [];
+  const priorUserMessages = recentUserMessages.slice(0, -1);
+  const recentTopPerformerContext = priorUserMessages.some((entry) =>
+    includesAny(entry, [
+      "top performer",
+      "highest billing",
+      "highest revenue",
+      "top pm",
+      "top manager",
+      "best performer",
+    ]),
+  );
+  const asksRevenue = includesAny(lowerQuestion, ["revenue", "revenye", "billing"]);
+  const asksTopPerformer = includesAny(lowerQuestion, [
+    "top performer",
+    "best performer",
+    "highest performer",
+    "highest billing",
+    "highest revenue",
+    "top pm",
+    "top manager",
+    "leading pm",
+    "leader in revenue",
+  ]);
+  const asksTopProject = includesAny(lowerQuestion, ["top project", "highest project"]);
+  const asksPageSummary = includesAny(lowerQuestion, [
+    "summarize this page",
+    "what does this dashboard show",
+    "what is on this page",
+  ]);
+  const asksProjectCount = includesAny(lowerQuestion, ["how many projects", "project count"]);
+  const asksAverageMonthly = includesAny(lowerQuestion, ["average monthly"]);
+  const isAcknowledgement = [
+    "yes",
+    "yes exactly",
+    "exactly",
+    "right",
+    "correct",
+  ].includes(lowerQuestion);
+  const leaderNameLower = topLeader ? normalizeQuestionText(topLeader.pm) : "";
 
   if (lowerQuestion.includes("forecast") && lowerQuestion.includes("actual")) {
     return `Forecast is the planned view: expected billing and assemblies to be dispatched. Actuals is the realized view: billing and assemblies already dispatched. Right now the page is in ${mode} mode with ${filtersText}.`;
@@ -290,14 +494,38 @@ function getStructuredDashboardReply(question, context) {
     return `The current ${mode} view shows ${dashboard.kpis?.assemblies || "no assembly count"} on the page. Active filters: ${filtersText}.`;
   }
 
-  if (lowerQuestion.includes("highest billing pm") || lowerQuestion.includes("top pm")) {
-    if (topProjectManagers.length > 0) {
-      const leader = topProjectManagers[0];
-      return `The highest visible PM by billing on this page is ${leader.pm}, at about Rs. ${leader.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr. Active filters: ${filtersText}.`;
-    }
+  if (
+    topLeader &&
+    (
+      (asksRevenue && asksTopPerformer) ||
+      lowerQuestion === "who s the top performer" ||
+      lowerQuestion === "who is the top performer" ||
+      lowerQuestion === "top performer in revenue" ||
+      lowerQuestion === "top performer" ||
+      (asksRevenue && recentTopPerformerContext) ||
+      (recentTopPerformerContext && lowerQuestion === "i am talking about revenue")
+    )
+  ) {
+    return `Based on the current ${mode} view, the top performer in revenue is ${topLeader.pm}, at about Rs. ${topLeader.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr. Active filters: ${filtersText}.`;
   }
 
-  if (lowerQuestion.includes("top project") || lowerQuestion.includes("highest project")) {
+  if (topLeader && leaderNameLower && lowerQuestion === leaderNameLower) {
+    return `Yes. Based on the current ${mode} view, ${topLeader.pm} is leading revenue at about Rs. ${topLeader.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr.`;
+  }
+
+  if (topLeader && leaderNameLower && lowerQuestion === `${leaderNameLower} `) {
+    return `Yes. Based on the current ${mode} view, ${topLeader.pm} is leading revenue at about Rs. ${topLeader.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr.`;
+  }
+
+  if (topLeader && isAcknowledgement && recentTopPerformerContext) {
+    return `Right. On the current ${mode} view, ${topLeader.pm} is the top revenue performer at about Rs. ${topLeader.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr.`;
+  }
+
+  if (asksTopPerformer && topLeader) {
+    return `On the current ${mode} view, the top performer by billing is ${topLeader.pm}, at about Rs. ${topLeader.billingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr. Active filters: ${filtersText}.`;
+  }
+
+  if (asksTopProject) {
     if (topVisibleProjects.length > 0) {
       const leader = topVisibleProjects[0];
       return `The top visible project right now is ${leader.name}, handled by ${leader.pm}, with about Rs. ${leader.totalBillingCr.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Cr.`;
@@ -310,23 +538,19 @@ function getStructuredDashboardReply(question, context) {
     }
   }
 
-  if (lowerQuestion.includes("how many projects") || lowerQuestion.includes("project count")) {
+  if (asksProjectCount) {
     if (dashboard.kpis?.projects) {
       return `The page currently shows ${dashboard.kpis.projects} projects. Active filters: ${filtersText}.`;
     }
   }
 
-  if (lowerQuestion.includes("average monthly")) {
+  if (asksAverageMonthly) {
     if (dashboard.kpis?.averageMonthly) {
       return `The current average monthly value on this page is ${dashboard.kpis.averageMonthly}. Active filters: ${filtersText}.`;
     }
   }
 
-  if (
-    lowerQuestion.includes("summarize this page") ||
-    lowerQuestion.includes("what does this dashboard show") ||
-    lowerQuestion.includes("what is on this page")
-  ) {
+  if (asksPageSummary) {
     return `This page is the ${dashboard.title || "dashboard"} for YOGIJI DIGI. It is currently showing the ${mode} view with ${dashboard.kpis?.projects || "0"} projects, ${dashboard.kpis?.billing || "no billing value"}, ${dashboard.kpis?.assemblies || "no assembly count"}, and ${dashboard.kpis?.averageMonthly || "no average monthly value"}. Active filters: ${filtersText}.`;
   }
 
@@ -420,7 +644,15 @@ module.exports = async (req, res) => {
   }
 
   const lastUserMessage = getLastUserMessage(messages);
-  const structuredReply = getStructuredDashboardReply(lastUserMessage?.content || "", context);
+  const companyReply = getStructuredCompanyReply(lastUserMessage?.content || "");
+  if (companyReply) {
+    return res.status(200).json({
+      reply: companyReply,
+      source: "structured-company",
+    });
+  }
+
+  const structuredReply = getStructuredDashboardReply(lastUserMessage?.content || "", context, messages);
   if (structuredReply) {
     return res.status(200).json({
       reply: structuredReply,
