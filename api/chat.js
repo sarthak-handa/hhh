@@ -3,6 +3,9 @@ const axios = require("axios");
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX_REQUESTS = 12;
+const requestLog = new Map();
 
 const SYSTEM_PROMPT = `
 You are YD AI Assistant for YOGIJI DIGI websites.
@@ -95,6 +98,30 @@ function extractReply(data) {
     .trim();
 }
 
+function getClientIp(req) {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (typeof forwarded === "string" && forwarded.trim()) {
+    return forwarded.split(",")[0].trim();
+  }
+  return req.socket?.remoteAddress || "unknown";
+}
+
+function isRateLimited(clientIp) {
+  const now = Date.now();
+  const recentRequests = (requestLog.get(clientIp) || []).filter(
+    (timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS,
+  );
+
+  if (recentRequests.length >= RATE_LIMIT_MAX_REQUESTS) {
+    requestLog.set(clientIp, recentRequests);
+    return true;
+  }
+
+  recentRequests.push(now);
+  requestLog.set(clientIp, recentRequests);
+  return false;
+}
+
 module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
 
@@ -107,6 +134,14 @@ module.exports = async (req, res) => {
     return res.status(500).json({
       error: "Missing GEMINI_API_KEY",
       message: "Set GEMINI_API_KEY in your server environment before using the chatbot.",
+    });
+  }
+
+  const clientIp = getClientIp(req);
+  if (isRateLimited(clientIp)) {
+    return res.status(429).json({
+      error: "Rate limited",
+      message: "Too many chat requests. Please wait a minute and try again.",
     });
   }
 
