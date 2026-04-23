@@ -3868,80 +3868,32 @@ body {
   </style>
   <script>function toggleTheme() { document.documentElement.classList.toggle("dark"); const isDark = document.documentElement.classList.contains("dark"); localStorage.setItem("theme", isDark ? "dark" : "light"); if (window.updateChartThemes) window.updateChartThemes(isDark); } if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) { document.documentElement.classList.add("dark"); } else { document.documentElement.classList.remove("dark"); }</script></head>
   <body class="bg-gray-50 text-gray-800 dark:bg-[#020617] dark:text-slate-100 font-sans antialiased transition-colors duration-300">
-    <div id="loader" class="bg-black transition-colors duration-300">
-      <canvas id="matrixCanvas" class="matrix-rain"></canvas>
-      <div class="loader-content">
-        <div class="bar-chart-loader">
-          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <!-- Matrix Loader Overlay -->
+    <div id="matrixLoader" style="
+        display:none;
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background:black;
+        z-index:9999;
+        justify-content:center;
+        align-items:center;
+        flex-direction:column;
+    ">
+        <canvas id="matrixCanvas" style="
+            position:absolute;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+        "></canvas>
+
+        <div style="z-index:2; text-align:center;">
+            <h1 style="color:#d51318; font-weight:800; font-size: 2.5rem; letter-spacing: 0.2rem;">PROCESSING</h1>
+            <p style="color:#aaa; font-family: monospace;">AI system running...</p>
         </div>
-        <div class="loader-text" style="color: #d51318; font-weight: bold; text-shadow: 0 0 10px #d51318;">Initializing Dashboard</div>
-        <div class="loader-progress-track"><div class="loader-progress-fill" style="background: linear-gradient(90deg, #d51318, #ff4d4d, #d51318);"></div></div>
-      </div>
-      <script>
-        (function() {
-          const canvas = document.getElementById('matrixCanvas');
-          const ctx = canvas.getContext('2d');
-          const charSet = "01010101 YOGIJI DIGI";
-          const fontSize = 16;
-          let columns = [];
-          
-          function initCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            initMatrix();
-          }
-
-          function initMatrix() {
-            const columnCount = Math.floor(canvas.width / fontSize);
-            columns = [];
-            for (let i = 0; i < columnCount; i++) {
-              columns.push({
-                x: i * fontSize,
-                y: Math.random() * -100,
-                speed: 1 + Math.random() * 3,
-                chars: charSet.split('')
-              });
-            }
-          }
-
-          function drawMatrix() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.08)'; // Semi-transparent black for trailing fade
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = '#d51318'; // Neon Red
-            ctx.font = fontSize + 'px "Courier New", monospace';
-            ctx.shadowBlur = 8;
-            ctx.shadowColor = '#d51318';
-
-            columns.forEach(column => {
-              const char = column.chars[Math.floor(Math.random() * column.chars.length)];
-              ctx.fillText(char, column.x, column.y * fontSize);
-
-              if (column.y * fontSize > canvas.height && Math.random() > 0.975) {
-                column.y = 0;
-              }
-              column.y += column.speed * 0.2;
-            });
-
-            ctx.shadowBlur = 0; // Reset shadow for efficiency
-            
-            if (!document.getElementById('loader').classList.contains('hidden-loader')) {
-              requestAnimationFrame(drawMatrix);
-            }
-          }
-
-          function resizeHandler() {
-            initCanvas();
-          }
-
-          window.addEventListener('resize', resizeHandler);
-          initCanvas();
-          drawMatrix();
-        })();
-      </script>
     </div>
 
     <header
@@ -3959,7 +3911,10 @@ body {
             <!-- Navigation buttons removed for refined dashboard view -->
           </div>
 
-          <div class="right-icons-group flex items-center pr-3"><button onclick="toggleTheme()" class="p-2 ml-4 rounded-full bg-gray-100 dark:bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-yellow-400 hover:scale-110 transition shadow-inner border border-gray-200 dark:border-gray-200 dark:border-slate-700"><i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:inline"></i></button></div></div></nav></header>
+          <div class="right-icons-group flex items-center pr-3">
+            <button onclick="startMatrix()" class="mr-2 px-3 py-1 text-xs border border-red-500 text-red-500 rounded hover:bg-red-500 hover:text-white transition">Start Loader</button>
+            <button onclick="stopMatrix()" class="mr-4 px-3 py-1 text-xs border border-gray-500 text-gray-500 rounded hover:bg-gray-500 hover:text-white transition">Stop Loader</button>
+            <button onclick="toggleTheme()" class="p-2 ml-4 rounded-full bg-gray-100 dark:bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-yellow-400 hover:scale-110 transition shadow-inner border border-gray-200 dark:border-gray-200 dark:border-slate-700"><i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:inline"></i></button></div></div></nav></header>
 
     <main class="px-4 sm:px-6 lg:px-8 py-6" style="margin: 0px">
       <div
@@ -4344,7 +4299,7 @@ body {
 
     <script>
       let database = [];
-      const loader = document.getElementById("loader");
+      // const loader = document.getElementById("loader"); // Replaced by matrixLoader system
       function changeAssemblySort(mode) {
         state.assemblySort = mode;
         updateDashboard(); // Trigger re-render to apply sort
@@ -4352,7 +4307,7 @@ body {
 
       // --- 1. DATA LOADING & PARSING ---
       async function loadDashboardData() {
-        loader.classList.remove("hidden-loader");
+        startMatrix();
 
         const monthSet = new Set();
         const MONTH_ORDER = [
@@ -4457,7 +4412,7 @@ body {
         } catch (err) {
           console.error("Data load failed:", err);
         } finally {
-          loader.classList.add("hidden-loader");
+          stopMatrix();
         }
       }
 
@@ -5577,6 +5532,87 @@ body {
           hour12: true,
         });
       }
+
+      // --- MATRIX ENGINE ---
+      const canvas = document.getElementById("matrixCanvas");
+      const ctx = canvas.getContext("2d");
+
+      let matrixColumns, matrixDrops, matrixSpeeds;
+      const matrixFontSize = 16;
+      let matrixAnimationId;
+
+      let matrixLetters = "01010101 YOGIJI DIGI AI VISION SYSTEM PROCESSING".split("");
+
+      function initCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      function initMatrix() {
+        matrixColumns = Math.floor(canvas.width / matrixFontSize);
+        matrixDrops = [];
+        matrixSpeeds = [];
+
+        for (let i = 0; i < matrixColumns; i++) {
+          matrixDrops[i] = Math.random() * canvas.height;
+          matrixSpeeds[i] = 0.5 + Math.random() * 1.5;
+        }
+      }
+
+      function drawMatrix() {
+        ctx.fillStyle = "rgba(0,0,0,0.08)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.font = matrixFontSize + "px monospace";
+
+        for (let i = 0; i < matrixDrops.length; i++) {
+          const text = matrixLetters[Math.floor(Math.random() * matrixLetters.length)];
+
+          ctx.fillStyle = Math.random() > 0.98 ? "#ff4d4d" : "#d51318";
+          ctx.shadowColor = "#d51318";
+          ctx.shadowBlur = 8;
+
+          ctx.fillText(text, i * matrixFontSize, matrixDrops[i]);
+
+          matrixDrops[i] += matrixSpeeds[i];
+
+          if (matrixDrops[i] > canvas.height) {
+            matrixDrops[i] = 0;
+          }
+        }
+      }
+
+      function animateMatrix() {
+        drawMatrix();
+        matrixAnimationId = requestAnimationFrame(animateMatrix);
+      }
+
+      function startMatrix() {
+        const ml = document.getElementById("matrixLoader");
+        if (ml) {
+          ml.style.display = "flex";
+          initCanvas();
+          initMatrix();
+          animateMatrix();
+        }
+      }
+
+      function stopMatrix() {
+        const ml = document.getElementById("matrixLoader");
+        if (ml) {
+          cancelAnimationFrame(matrixAnimationId);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ml.style.display = "none";
+        }
+      }
+
+      window.addEventListener("resize", () => {
+        const ml = document.getElementById("matrixLoader");
+        if (ml && ml.style.display === "flex") {
+          initCanvas();
+          initMatrix();
+        }
+      });
     </script>
   </body>
 </html>
