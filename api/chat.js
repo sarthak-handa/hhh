@@ -688,21 +688,6 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  if (!GEMINI_API_KEY && !OPENAI_API_KEY) {
-    return res.status(500).json({
-      error: "Missing AI credentials",
-      message: "Add an AI API key to your server environment.",
-    });
-  }
-
-  const clientIp = getClientIp(req);
-  if (isRateLimited(clientIp)) {
-    return res.status(429).json({
-      error: "Rate limited",
-      message: "Too many chat requests. Please wait a minute and try again.",
-    });
-  }
-
   const body = normalizeBody(req.body);
   const messages = normalizeMessages(body.messages);
   const context = body.context && typeof body.context === "object" ? body.context : {};
@@ -715,6 +700,8 @@ module.exports = async (req, res) => {
   }
 
   const lastUserMessage = getLastUserMessage(messages);
+  
+  // 1. Check for basic conversation (Hi, Thanks, etc)
   const conversationReply = getStructuredConversationReply(lastUserMessage?.content || "");
   if (conversationReply) {
     return res.status(200).json({
@@ -723,6 +710,7 @@ module.exports = async (req, res) => {
     });
   }
 
+  // 2. Check for company info
   const companyReply = getStructuredCompanyReply(lastUserMessage?.content || "");
   if (companyReply) {
     return res.status(200).json({
@@ -731,6 +719,7 @@ module.exports = async (req, res) => {
     });
   }
 
+  // 3. Check for live dashboard data questions
   const structuredResult = getStructuredDashboardReply(lastUserMessage?.content || "", context, messages);
   if (structuredResult) {
     const isObject = typeof structuredResult === "object" && structuredResult !== null;
@@ -738,6 +727,14 @@ module.exports = async (req, res) => {
       reply: isObject ? structuredResult.reply : structuredResult,
       suggestions: isObject ? structuredResult.suggestions : [],
       source: "structured-context",
+    });
+  }
+
+  // 4. If no structured match, we need the AI provider - check keys now
+  if (!GEMINI_API_KEY && !OPENAI_API_KEY) {
+    return res.status(500).json({
+      error: "AI Config Required",
+      message: "I can answer basic and dashboard questions, but for deep insights, please configure an AI API key (Gemini or OpenAI) in your environment settings.",
     });
   }
 

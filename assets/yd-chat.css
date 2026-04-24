@@ -20,18 +20,7 @@
   color: var(--ydc-text);
 }
 
-html.dark .ydc-root,
-body.dark-mode .ydc-root {
-  --ydc-bg: rgba(15, 23, 42, 0.9);
-  --ydc-panel-bg: rgba(15, 23, 42, 0.92);
-  --ydc-border: rgba(148, 163, 184, 0.16);
-  --ydc-shadow: 0 24px 60px rgba(2, 6, 23, 0.42);
-  --ydc-text: #e2e8f0;
-  --ydc-muted: #94a3b8;
-  --ydc-track: rgba(148, 163, 184, 0.12);
-  --ydc-assistant-bg: rgba(30, 41, 59, 0.9);
-  --ydc-input-bg: rgba(15, 23, 42, 0.86);
-}
+/* Dark mode overrides removed to enforce permanent light theme */
 
 .ydc-launcher {
   width: 62px;
@@ -416,10 +405,7 @@ body.dark-mode .ydc-root {
   min-width: 200px;
 }
 
-.dark .ydc-data-card {
-  background: rgba(15, 23, 42, 0.4);
-  border-color: rgba(148, 163, 184, 0.1);
-}
+/* Dark mode data card overrides removed */
 
 .ydc-card-title {
   font-size: 0.7rem;
@@ -432,7 +418,7 @@ body.dark-mode .ydc-root {
 .ydc-card-value {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #38bdf8;
+  color: var(--ydc-red);
 }
 
 .ydc-card-subtitle {
@@ -458,7 +444,4 @@ body.dark-mode .ydc-root {
   opacity: 0.9;
 }
 
-.dark .ydc-card-action {
-  background: #38bdf8;
-  color: #0f172a;
-}
+/* Dark mode card overrides removed */
