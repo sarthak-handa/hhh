@@ -7,7 +7,7 @@ const CLIENT_ID = process.env.CLIENT_ID || "674b7459-54de-4d1d-b13a-0070c7b57d58
 const CLIENT_SECRET = process.env.GRAPH_CLIENT_SECRET;
 const DRIVE_ID = "b!-1MZkE8WdUCwHHHaP1rzH_PqGBIe57tJvXHEOqKXXGHlO_rJZfmnQLPiI9rdBJ_7";
 const FILE_ID = "01YUMYDKJ4P2DAPAXKUNCJH5CCCZ3RZ35F";
-const SHEET_NAME = "ActualBilling";
+const SHEET_NAME = "Sheet1";
 
 // --- UTILS ---
 async function getAccessToken() {
@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
 
     const workbook = XLSX.read(excelRes.data);
     const sheet = workbook.Sheets[SHEET_NAME];
-    if (!sheet) throw new Error("ActualBilling sheet not found");
+    if (!sheet) throw new Error("Sheet1 sheet not found");
 
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false });
     const headerSkipped = rows.slice(1);
