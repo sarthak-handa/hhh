@@ -82,14 +82,6 @@
   --surface-color: #ffffff;
 }
 
-.dark-background {
-  --background-color: #060606;
-  --default-color: #ffffff;
-  --heading-color: #ffffff;
-  --surface-color: #343333;
-  --contrast-color: #ffffff;
-}
-
 /* Smooth scroll */
 :root {
   scroll-behavior: smooth;
@@ -3710,10 +3702,8 @@ body {
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
-        transition: opacity 0.2s ease, visibility 0.2s ease;
-        background:
-          radial-gradient(circle at top, rgba(213, 19, 24, 0.16), transparent 34%),
-          linear-gradient(135deg, #000000 0%, #110202 48%, #000000 100%);
+        transition: opacity 0.4s ease, visibility 0.4s ease;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
       }
       #matrixLoader.is-active {
         opacity: 1;
@@ -3750,31 +3740,32 @@ body {
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
-        color: rgba(236, 213, 214, 0.9);
+        color: #64748b;
         font-size: 0.72rem;
+        font-weight: 600;
         letter-spacing: 0.04rem;
-        text-shadow: 0 0 10px rgba(213, 19, 24, 0.22);
       }
       .matrix-loader-copy {
         white-space: nowrap;
       }
       .matrix-loader-pct {
-        color: #f7d4d5;
+        color: #a81818;
         font-variant-numeric: tabular-nums;
+        font-weight: 700;
       }
       .matrix-loader-track {
         width: 100%;
-        height: 2px;
+        height: 3px;
         border-radius: 999px;
         overflow: hidden;
-        background: rgba(255, 255, 255, 0.08);
+        background: #e2e8f0;
       }
       .matrix-loader-fill {
         height: 100%;
         width: 0%;
         border-radius: inherit;
-        background: linear-gradient(90deg, #7c0e12, #d51318 45%, #ff6262 100%);
-        box-shadow: 0 0 12px rgba(213, 19, 24, 0.45);
+        background: linear-gradient(90deg, #a81818, #dc2626 45%, #f87171 100%);
+        box-shadow: 0 0 10px rgba(168, 24, 24, 0.2);
         transition: width 0.2s ease-out;
       }
       .theme-switch {
@@ -3846,23 +3837,22 @@ body {
         --brand-dark: #0f172a;
       }
       body {
-        background-color: #020617 !important; /* ultra dark slate */
-        color: #f1f5f9; /* slate-100 */
+        background-color: #f8fafc !important; /* light slate */
+        color: #1e293b; /* slate-800 */
       }
       .glass-panel {
-        background: rgba(15, 23, 42, 0.65) !important; /* slate-900 opacity */
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        background: rgba(255, 255, 255, 0.7) !important;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
       }
-      /* Custom glowing scrollbar for dark mode */
+      /* Custom scrollbar */
       .custom-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
-      .custom-scroll::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); border-radius: 10px; }
+      .custom-scroll::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.05); border-radius: 10px; }
       .custom-scroll::-webkit-scrollbar-thumb { 
-        background: linear-gradient(180deg, #38bdf8, #818cf8); 
+        background: #cbd5e1; 
         border-radius: 10px; 
-        box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
       }
 
       .kpi-card {
@@ -3890,11 +3880,11 @@ body {
         -webkit-appearance: none;
         appearance: none;
         background-color: transparent;
-        color: #f1f5f9;
+        color: #1e293b;
       }
       .custom-select option {
-        background-color: #0f172a;
-        color: #f1f5f9;
+        background-color: #ffffff;
+        color: #1e293b;
       }
       .danger-badge {
         background-color: rgba(239, 68, 68, 0.2);
@@ -3975,46 +3965,15 @@ body {
     .dark .custom-select option { background-color: #0f172a !important; color: #f1f5f9 !important; }
   </style>
   <script>
-    function syncThemeToggle() {
-      const toggleButton = document.getElementById("theme-toggle");
-      const toggleLabel = document.getElementById("theme-toggle-label");
-      const toggleIcon = document.getElementById("theme-toggle-icon");
-      const isDark = document.documentElement.classList.contains("dark");
-
-      if (toggleButton) {
-        toggleButton.setAttribute("aria-pressed", isDark ? "true" : "false");
-      }
-      if (toggleLabel) {
-        toggleLabel.textContent = isDark ? "Light Mode" : "Dark Mode";
-      }
-      if (toggleIcon) {
-        toggleIcon.className = `fa-solid ${isDark ? "fa-sun" : "fa-moon"} theme-switch-icon`;
-      }
-    }
-
-    function applyTheme(theme) {
-      const isDark = theme === "dark";
-      document.documentElement.classList.toggle("dark", isDark);
-      localStorage.setItem("theme", isDark ? "dark" : "light");
-      syncThemeToggle();
-      if (window.updateChartThemes) window.updateChartThemes(isDark);
-    }
-
-    function toggleTheme() {
-      const nextTheme = document.documentElement.classList.contains("dark") ? "light" : "dark";
-      applyTheme(nextTheme);
-    }
-
-    document.documentElement.classList.toggle("dark", localStorage.getItem("theme") === "dark");
-    document.addEventListener("DOMContentLoaded", syncThemeToggle);
-  </script></head>
-  <body class="bg-gray-50 text-gray-800 dark:bg-[#020617] dark:text-slate-100 font-sans antialiased transition-colors duration-300">
+  </script>
+  </head>
+  <body class="bg-gray-50 text-gray-800 font-sans antialiased transition-colors duration-300">
     <!-- Matrix Loader Overlay -->
     <div id="matrixLoader" aria-live="polite" aria-busy="true">
         <canvas id="matrixCanvas" class="matrix-rain"></canvas>
         <div class="matrix-loader-ui">
             <div class="matrix-loader-meta">
-                <span class="matrix-loader-copy">Inititalising YD Insights</span>
+                <span class="matrix-loader-copy">Loading YD Dashboards...</span>
                 <span class="matrix-loader-pct" id="matrixLoaderPct">0%</span>
             </div>
             <div class="matrix-loader-track" aria-hidden="true">
@@ -4025,7 +3984,7 @@ body {
 
     <header
       id="header"
-      class="header sticky-top bg-white border-b border-gray-200 dark:glass-panel dark:border-gray-200 dark:border-gray-200 dark:border-slate-700/50 shadow-sm transition-colors duration-300"
+      class="header sticky-top bg-white border-b border-gray-200 shadow-sm transition-colors duration-300"
       style="padding: 10px 0;"
     >
       <nav class="navbar">
@@ -4039,17 +3998,7 @@ body {
           </div>
 
           <div class="right-icons-group flex items-center pr-3">
-            <button
-              id="theme-toggle"
-              type="button"
-              class="theme-switch"
-              onclick="toggleTheme()"
-              aria-label="Toggle color theme"
-              aria-pressed="false"
-            >
-              <i id="theme-toggle-icon" class="fa-solid fa-moon theme-switch-icon" aria-hidden="true"></i>
-              <span id="theme-toggle-label">Dark Mode</span>
-            </button></div></div></nav></header>
+          </div></div></nav></header>
 
     <main class="px-4 sm:px-6 lg:px-8 py-6" style="margin: 0px">
       <div
@@ -4058,7 +4007,7 @@ body {
         <div>
           <div class="mb-2">
             <h1
-              class="text-3xl font-bold uppercase text-yogi-red dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-sky-400 dark:to-rose-400"
+              class="text-2xl sm:text-3xl font-bold uppercase text-yogi-red"
             >
               Sales & Cash Flow
             </h1>
@@ -4107,7 +4056,7 @@ body {
         </div>
 
         <div
-          class="flex flex-wrap gap-3 w-full xl:w-auto justify-end bg-white dark:glass-panel p-3 rounded-lg shadow-sm border border-gray-200 dark:border-slate-800 transition-colors"
+          class="flex flex-wrap gap-3 w-full xl:w-auto justify-end bg-white p-3 rounded-lg shadow-sm border border-gray-200 transition-colors"
         >
           <!-- Bookmarks / Saved Views -->
           <div class="flex flex-col relative">
@@ -4300,9 +4249,9 @@ body {
         class="glass-panel rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 overflow-hidden"
       >
         <div
-          class="bg-gray-50 dark:bg-slate-900/80 px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center"
+          class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center"
         >
-          <h3 class="font-bold text-slate-100 uppercase tracking-widest text-sm">Detailed Assemblies Value</h3>
+          <h3 class="font-bold text-slate-800 uppercase tracking-widest text-sm">Detailed Assemblies Value</h3>
           <span
             id="table-count"
             class="text-xs font-bold text-sky-400 bg-sky-500/20 border border-sky-500/30 px-3 py-1 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.2)]"
@@ -4312,14 +4261,14 @@ body {
         <div class="overflow-x-auto custom-scroll">
           <table class="w-full text-sm text-left">
             <thead
-              class="bg-gray-50 dark:bg-gray-100 dark:bg-slate-800/80 text-xs uppercase text-gray-700 dark:text-slate-300 sticky top-0 z-10"
+              class="bg-gray-50 text-xs uppercase text-gray-700 sticky top-0 z-10"
             >
               <tr>
-                <th class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 w-12"></th>
-                <th class="px-6 py-4 border-b border-gray-200 dark:border-slate-700">Project Name</th>
-                <th class="px-6 py-4 border-b border-gray-200 dark:border-slate-700">Manager</th>
+                <th class="px-6 py-4 border-b border-gray-200 w-12"></th>
+                <th class="px-6 py-4 border-b border-gray-200">Project Name</th>
+                <th class="px-6 py-4 border-b border-gray-200">Manager</th>
                 <th
-                  class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 text-right cursor-pointer select-none hover:text-sky-400 transition"
+                  class="px-6 py-4 border-b border-gray-200 text-right cursor-pointer select-none hover:text-sky-400 transition"
                   onclick="toggleBillingSort()"
                 >
                   Billing (₹)
@@ -4477,10 +4426,10 @@ body {
     <div id="sidePanel" class="side-panel">
       <div class="side-panel-header">
         <div>
-          <h2 id="panelTitle" class="text-xl font-bold text-sky-400">Project Details</h2>
-          <p id="panelSubtitle" class="text-xs text-slate-400 uppercase tracking-widest mt-1">Summary Overview</p>
+          <h2 id="panelTitle" class="text-xl font-bold text-yogi-red">Project Details</h2>
+          <p id="panelSubtitle" class="text-xs text-gray-500 uppercase tracking-widest mt-1">Summary Overview</p>
         </div>
-        <button onclick="closeSidePanel()" class="text-slate-400 hover:text-white transition">
+        <button onclick="closeSidePanel()" class="text-gray-400 hover:text-gray-800 transition">
           <i class="fa-solid fa-xmark text-2xl"></i>
         </button>
       </div>
@@ -5029,18 +4978,8 @@ body {
 
       // --- CHART INITIALIZATION (FIXED ROTATION HERE) ---
       
-      function updateChartThemes(isDark) {
-        if (!charts || (!charts.bar && !charts.pie && !charts.line)) return;
-        const textColor = isDark ? "#cbd5e1" : "#4b5563";
-        const gridColor = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0,0,0,0.05)";
-        Chart.defaults.color = textColor;
-        try { charts.bar.options.scales.x.ticks.color = textColor; charts.bar.options.scales.y.ticks.color = textColor; charts.bar.options.scales.y.title.color = textColor; charts.bar.options.scales.y.grid.color = gridColor; charts.bar.options.plugins.datalabels.color = textColor; charts.bar.update(); } catch(e){}
-        try { charts.pie.options.plugins.legend.labels.color = textColor;
-        if(charts.pie.options.plugins.datalabels) charts.pie.options.plugins.datalabels.color = textColor; charts.pie.update(); } catch(e){}
-        try { charts.line.options.scales.x.ticks.color = textColor; charts.line.options.scales.y.ticks.color = textColor; charts.line.options.scales.y.title.color = textColor; charts.line.options.scales.y.grid.color = gridColor; charts.line.options.plugins.datalabels.color = isDark ? "#38bdf8" : "#a81818"; charts.line.options.plugins.datalabels.backgroundColor = isDark ? "rgba(15, 23, 42, 0.8)" : "rgba(255, 255, 255, 0.9)"; charts.line.options.plugins.datalabels.borderColor = isDark ? "rgba(56, 189, 248, 0.3)" : "rgba(168, 24, 24, 0.3)"; charts.line.update(); } catch(e){}
-      }
 
-      function initCharts() { const isDark = document.documentElement.classList.contains("dark"); const textColor = isDark ? "#cbd5e1" : "#4b5563"; 
+      function initCharts() { const textColor = "#4b5563"; 
 
         Chart.register(ChartDataLabels);
         // --- Premium Chart VFX & Animations ---
@@ -5055,10 +4994,10 @@ body {
           animation: vfxAnimation,
           plugins: { 
             tooltip: { 
-              backgroundColor: "rgba(15, 23, 42, 0.9)", // slate-900
-              titleColor: "#38bdf8", // sky-400
-              bodyColor: "#f1f5f9", // slate-100
-              borderColor: "rgba(255, 255, 255, 0.1)",
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              titleColor: "#a81818",
+              bodyColor: "#1e293b",
+              borderColor: "rgba(0, 0, 0, 0.1)",
               borderWidth: 1,
               padding: 12, cornerRadius: 8, bodyFont: { size: 13 }, titleFont: { size: 14, weight: 'bold' } 
             } 
@@ -5139,7 +5078,7 @@ body {
                 anchor: 'end',
                 align: 'end',
                 offset: 12,
-                color: isDark ? "#cbd5e1" : "#1f2937",
+                color: "#334155",
                 font: { weight: "bold", size: 11 },
                 formatter: (val) => val.toFixed(2),
               },
@@ -5166,13 +5105,13 @@ body {
             plugins: {
               ...commonOpts.plugins,
               legend: { display: false },
-              datalabels: {
-                display: true,
-                align: "top",
-                offset: 5,
-                backgroundColor: "rgba(15, 23, 42, 0.8)", // slate-900 background for dots
-                color: "#38bdf8", // sky-400 text
-                borderColor: "rgba(56, 189, 248, 0.3)",
+                datalabels: {
+                  display: true,
+                  align: "top",
+                  offset: 5,
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  color: "#a81818", 
+                  borderColor: "rgba(168, 24, 24, 0.2)",
                 borderWidth: 1,
                 borderRadius: 4,
                 padding: 4,
@@ -5186,15 +5125,15 @@ body {
                 title: {
                   display: true,
                   text: "Value ( in ₹ Cr.)",
-                  color: "#cbd5e1", // slate-300
+                  color: "#475569",
                   font: { weight: "bold" },
                 },
-                ticks: { color: "#94a3b8" }, // slate-400
-                grid: { color: "rgba(255, 255, 255, 0.05)" },
+                ticks: { color: "#64748b" },
+                grid: { color: "rgba(0, 0, 0, 0.05)" },
               },
               x: { 
                 grid: { display: false },
-                ticks: { color: "#94a3b8" } // slate-400
+                ticks: { color: "#64748b" }
               },
             },
             onClick: (e, els) => {
@@ -5215,8 +5154,8 @@ body {
         const FISCAL_MONTH_ORDER = ["Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"];
         const colors = {
           red: "#a81818",
-          pink: "#fca5a5",
-          gray: "#e5e7eb",
+          pink: "#fecaca",
+          gray: "#f3f4f6",
           // Extended palette for production line distribution (matches reference)
           pieBase: [
             "#B02A37", "#2E4F6E", "#8C1D2D", "#E8A838", "#6C757D",
@@ -6212,24 +6151,26 @@ body {
       function drawMatrix() {
         if (!ctx) return;
 
-        ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+        ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
         ctx.fillRect(0, 0, matrixViewportWidth, matrixViewportHeight);
-        ctx.font = `${matrixFontSize}px "Courier New", monospace`;
+        ctx.font = `${matrixFontSize}px "Inter", sans-serif`;
         ctx.textBaseline = "top";
+        ctx.fontWeight = "700";
 
         for (let i = 0; i < matrixDrops.length; i++) {
           const text = matrixLetters[Math.floor(Math.random() * matrixLetters.length)];
           const x = i * matrixFontSize;
           const y = matrixDrops[i] * matrixFontSize;
 
-          ctx.shadowColor = "rgba(213, 19, 24, 0.8)";
-          ctx.shadowBlur = 12;
-          ctx.fillStyle = "#d51318";
+          ctx.fillStyle = "#a81818";
+          ctx.globalAlpha = 0.8;
           ctx.fillText(text, x, y);
 
-          ctx.shadowBlur = 0;
-          ctx.fillStyle = "rgba(255, 210, 210, 0.92)";
+          ctx.fillStyle = "#ef4444";
+          ctx.globalAlpha = 0.4;
           ctx.fillText(text, x, y - matrixFontSize);
+          
+          ctx.globalAlpha = 1.0;
 
           if (y > matrixViewportHeight && Math.random() > 0.975) {
             matrixDrops[i] = 0;
