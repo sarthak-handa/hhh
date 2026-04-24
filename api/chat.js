@@ -247,9 +247,32 @@ function getStructuredCompanyReply(question) {
       "leadership",
       "directors",
       "leadership team",
+      "navneet singh gill",
+      "navneet gill",
+      "satish kumar tripathi",
+      "satish tripathi",
+      "sameer bansal",
+      "varun jay rana",
+      "varun rana",
+      "aseem gill",
     ])
   ) {
-    return "The key leadership context I have for YOGIJI DIGI is: Navneet Singh Gill as Managing Director, with Satish Kumar Tripathi and Sameer Bansal as directors. Varun Jay Rana and Aseem Gill also appear in senior business and operations context.";
+    if (lowerQuestion.includes("navneet")) {
+      return "Navneet Singh Gill is the Managing Director of YOGIJI DIGI. He leads the company's overall vision and strategic direction.";
+    }
+    if (lowerQuestion.includes("satish")) {
+      return "Satish Kumar Tripathi is a Director at YOGIJI DIGI, contributing to the company's leadership and industrial engineering focus.";
+    }
+    if (lowerQuestion.includes("sameer")) {
+      return "Sameer Bansal is a Director at YOGIJI DIGI, part of the core leadership overseeing industrial processing and automation solutions.";
+    }
+    if (lowerQuestion.includes("aseem")) {
+      return "Aseem Gill is part of the senior leadership context at YOGIJI DIGI, often involved in business development and sustainability initiatives.";
+    }
+    if (lowerQuestion.includes("varun")) {
+      return "Varun Jay Rana is a key member of the operations and engineering leadership at YOGIJI DIGI.";
+    }
+    return "The key leadership at YOGIJI DIGI includes Navneet Singh Gill (Managing Director), Satish Kumar Tripathi (Director), and Sameer Bansal (Director). Aseem Gill and Varun Jay Rana also hold senior leadership roles in business and operations.";
   }
 
   if (
@@ -735,6 +758,15 @@ module.exports = async (req, res) => {
     return res.status(500).json({
       error: "AI Config Required",
       message: "I can answer basic and dashboard questions, but for deep insights, please configure an AI API key (Gemini or OpenAI) in your environment settings.",
+    });
+  }
+
+  // 5. Rate limit only the expensive AI provider calls
+  const clientIp = getClientIp(req);
+  if (isRateLimited(clientIp)) {
+    return res.status(429).json({
+      error: "Rate limited",
+      message: "Too many chat requests. Please wait a minute and try again.",
     });
   }
 
