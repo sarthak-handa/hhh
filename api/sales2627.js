@@ -67,20 +67,20 @@ module.exports = async (req, res) => {
       })
       .filter((d) => {
         if (!(d.dispatchMonth instanceof Date) || isNaN(d.dispatchMonth)) return false;
-        const fyStart = new Date(2025, 3, 1, 0, 0, 0); // April 1, 2025
-        const fyEnd = new Date(2026, 2, 31, 23, 59, 59); // March 31, 2026
+        const fyStart = new Date(2026, 3, 1, 0, 0, 0); // April 1, 2026
+        const fyEnd = new Date(2027, 2, 31, 23, 59, 59); // March 31, 2027
         return d.dispatchMonth >= fyStart && d.dispatchMonth <= fyEnd;
       });
 
     res.status(200).json({
       source: "Vercel Serverless",
-      fiscalLogic: "April 2025 to March 2026",
+      fiscalLogic: "April 2026 to March 2027",
       lastUpdated: metaRes.data.lastModifiedDateTime,
       count: data.length,
       data,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to fetch actuals data", message: error.message });
+    res.status(500).json({ error: "Failed to fetch sales 26-27 data", message: error.message });
   }
 };

@@ -9,6 +9,10 @@
       "destination": "/api/actuals"
     },
     {
+      "source": "/api/excel/sales2627/dashboard",
+      "destination": "/api/sales2627"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     }

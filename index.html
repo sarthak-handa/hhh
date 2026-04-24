@@ -4090,9 +4090,16 @@ body {
               FORECAST 26-27
             </button>
             <button
+              id="toggle-sales2627"
+              onclick="switchDataContext('sales2627')"
+              class="px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800 dark:text-gray-500 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-gray-100 dark:bg-slate-800/50"
+            >
+              SALES 26-27
+            </button>
+            <button
               id="toggle-actuals"
               onclick="switchDataContext('actuals')"
-              class="px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800 dark:text-gray-500 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-gray-100 dark:hover:bg-gray-100 dark:bg-slate-800/50"
+              class="px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800 dark:text-gray-500 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-gray-100 dark:bg-slate-800/50"
             >
               REVENUE 25-26
             </button>
@@ -4513,6 +4520,8 @@ body {
         const endpoint =
           state.context === "forecast"
             ? `${API_URL}/excel/forecast/dashboard`
+            : state.context === "sales2627"
+            ? `${API_URL}/excel/sales2627/dashboard`
             : `${API_URL}/excel/actuals/dashboard`;
 
         try {
@@ -4638,15 +4647,19 @@ body {
       function syncUiWithState() {
         // Sync context buttons
         const forBtn = document.getElementById("toggle-forecast");
+        const salesBtn = document.getElementById("toggle-sales2627");
         const actBtn = document.getElementById("toggle-actuals");
         const mode = state.context;
+        const activeClass = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 bg-yogi-red dark:bg-rose-500 dark:shadow-[0_0_10px_rgba(244,63,94,0.4)] text-white";
+        const inactiveClass = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800 dark:text-gray-500 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-gray-100 dark:bg-slate-800/50";
+        
+        forBtn.className = mode === "forecast" ? activeClass : inactiveClass;
+        salesBtn.className = mode === "sales2627" ? activeClass : inactiveClass;
+        actBtn.className = mode === "actuals" ? activeClass : inactiveClass;
+
         if (mode === "forecast") {
-          forBtn.className = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 bg-yogi-red dark:bg-rose-500 dark:shadow-[0_0_10px_rgba(244,63,94,0.4)] text-white";
-          actBtn.className = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800 dark:text-gray-500 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-gray-100 dark:hover:bg-gray-100 dark:bg-slate-800/50";
           document.getElementById("dispatch-status-container").style.display = "flex";
         } else {
-          actBtn.className = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 bg-yogi-red dark:bg-rose-500 dark:shadow-[0_0_10px_rgba(244,63,94,0.4)] text-white";
-          forBtn.className = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800 dark:text-gray-500 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-gray-100 dark:hover:bg-gray-100 dark:bg-slate-800/50";
           document.getElementById("dispatch-status-container").style.display = "none";
         }
 
@@ -4682,23 +4695,23 @@ body {
 
         // --- BUTTON STYLES ---
         const forBtn = document.getElementById("toggle-forecast");
+        const salesBtn = document.getElementById("toggle-sales2627");
         const actBtn = document.getElementById("toggle-actuals");
         const statusContainer = document.getElementById(
           "dispatch-status-container",
         );
 
+        const activeClass = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 bg-yogi-red dark:bg-rose-500 dark:shadow-[0_0_10px_rgba(244,63,94,0.4)] text-white";
+        const inactiveClass = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800 dark:text-gray-500 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-gray-100 dark:bg-slate-800/50";
+
+        forBtn.className = context === "forecast" ? activeClass : inactiveClass;
+        salesBtn.className = context === "sales2627" ? activeClass : inactiveClass;
+        actBtn.className = context === "actuals" ? activeClass : inactiveClass;
+
         if (context === "forecast") {
           statusContainer.style.display = "flex";
-          forBtn.className =
-            "px-4 py-1.5 text-xs font-bold rounded bg-yogi-red text-white shadow-sm";
-          actBtn.className =
-            "px-4 py-1.5 text-xs font-bold rounded text-gray-500 hover:text-gray-700";
         } else {
           statusContainer.style.display = "none";
-          actBtn.className =
-            "px-4 py-1.5 text-xs font-bold rounded bg-yogi-red text-white shadow-sm";
-          forBtn.className =
-            "px-4 py-1.5 text-xs font-bold rounded text-gray-500 hover:text-gray-700";
           state.filters.status = null;
           document.getElementById("filter-status").value = "all";
         }
@@ -5914,11 +5927,14 @@ body {
 
         // --- DYNAMIC CONTENT LOGIC ---
         const isForecast = state.context === "forecast";
+        const isSales = state.context === "sales2627";
         const reportTitle = isForecast
           ? "Detailed Forecast Assembly Overview"
+          : isSales
+          ? "Detailed Sales Assembly Overview"
           : "Detailed Actual Assembly Overview";
 
-        const fyText = isForecast ? "FY 2026-27" : "FY 2025-26";
+        const fyText = isForecast || isSales ? "FY 2026-27" : "FY 2025-26";
 
         doc.setFontSize(15);
         doc.setTextColor(brandRed);
@@ -5970,7 +5986,7 @@ body {
           ]);
           columnStyles = { 2: { halign: "right" } };
         } else {
-          // For Actuals: Remove Date and Value columns
+          // For Actuals and Sales: Remove Date and Value columns
           tableHead = [["Assembly Name"]];
           tableBody = project.items.map((item) => [item.assembly]);
           columnStyles = {};
@@ -5990,7 +6006,7 @@ body {
           styles: { fontSize: 9, cellPadding: 3 },
         });
 
-        const prefix = isForecast ? "forecast" : "actual";
+        const prefix = isForecast ? "forecast" : isSales ? "sales" : "actual";
         const safeName = project.name.replace(/[^a-z0-9]/gi, "_").toLowerCase();
         doc.save(`${prefix}_${safeName}_report.pdf`);
       }
@@ -6008,15 +6024,20 @@ body {
 
         // --- DYNAMIC DATA CALCULATION ---
         const isForecast = state.context === "forecast";
+        const isSales = state.context === "sales2627";
         const reportTitle = isForecast
           ? "Project Forecast Report"
+          : isSales
+          ? "Sales Revenue Report"
           : "Actual Revenue Report";
         const totalLabel = isForecast
           ? "TOTAL FORECAST"
+          : isSales
+          ? "TOTAL SALES"
           : "TOTAL ACTUAL REVENUE";
 
         // Added static text since FY span was removed
-        const fyText = isForecast ? "FY 2026-27" : "FY 2025-26";
+        const fyText = isForecast || isSales ? "FY 2026-27" : "FY 2025-26";
 
         // Determine Date Range from Filters
         let dateRangeText = "Full Financial Year";
