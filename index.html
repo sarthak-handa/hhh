@@ -4795,9 +4795,10 @@ body {
 
         if (selectedMonthCount > 0) {
           divisor = selectedMonthCount;
-        } else if (state.context === "actuals") {
+        } else if (state.context === "sales2627") {
+          // Current Revenue (26-27) - Dynamic Performance
           const now = new Date();
-          const fyStartYear = 2025;
+          const fyStartYear = 2026;
           const fyStart = new Date(fyStartYear, 3, 1);
           const fyEnd = new Date(fyStartYear + 1, 2, 31);
 
@@ -4809,8 +4810,11 @@ body {
             divisor = (now.getFullYear() - fyStartYear) * 12 + (now.getMonth() - 3) + 1;
             divisor = Math.max(1, Math.min(12, divisor));
           }
+        } else if (state.context === "actuals") {
+          // Finished FY (25-26) - Full Year Avg
+          divisor = 12;
         } else {
-          // Forecast/Sales context defaults to 12
+          // Forecast (Target) - Fixed Annual Target
           divisor = 12;
         }
 
