@@ -3956,18 +3956,55 @@ body {
     </script>
   <style id="theme-overrides">
     body { background-color: #f8f9fa !important; color: #1f2937 !important; transition: background-color 0.3s, color 0.3s !important; }
-    .dark body { background-color: #020617 !important; color: #f1f5f9 !important; }
-    .glass-panel { background: rgba(255, 255, 255, 0.8) !important; border: 1px solid rgba(0, 0, 0, 0.1) !important; transition: background 0.3s, border 0.3s !important; }
-    .dark .glass-panel { background: rgba(15, 23, 42, 0.65) !important; border: 1px solid rgba(255, 255, 255, 0.05) !important; }
-    .custom-select { background-color: white !important; color: #1f2937 !important; }
-    .dark .custom-select { background-color: rgba(15, 23, 42, 0.8) !important; color: #f1f5f9 !important; }
-    .custom-select option { background-color: white !important; color: #1f2937 !important; }
-    .dark .custom-select option { background-color: #0f172a !important; color: #f1f5f9 !important; }
+    .glass-panel { background: rgba(255, 255, 255, 0.8) !important; border: 1px solid rgba(0, 0, 0, 0.1) !important; }
+    
+    /* Login System Styles */
+    #login-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e2e8f0 100%);
+      z-index: 10000; display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .login-card {
+      background: white; padding: 40px; border-radius: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      width: 100%; max-width: 400px; text-align: center;
+    }
+    .login-input {
+      width: 100%; padding: 12px 16px; margin: 8px 0 20px;
+      border: 1px solid #e2e8f0; border-radius: 8px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .login-input:focus { border-color: #a81818; }
+    .login-btn {
+      width: 100%; background: #a81818; color: white; padding: 12px;
+      border-radius: 8px; font-weight: 700; transition: background 0.2s;
+    }
+    .login-btn:hover { background: #8e1414; }
   </style>
   <script>
   </script>
   </head>
   <body class="bg-gray-50 text-gray-800 font-sans antialiased transition-colors duration-300">
+    <!-- Login Overlay -->
+    <div id="login-overlay">
+      <div class="login-card" data-aos="zoom-in">
+        <img src="assets/img/YDLOGO.png" alt="Logo" class="mx-auto mb-6" style="height: 60px" />
+        <h2 class="text-xl font-bold text-gray-800 mb-2">Welcome to YD Insights</h2>
+        <p class="text-sm text-gray-500 mb-8">Please enter your credentials to continue</p>
+        
+        <div class="text-left">
+          <label class="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Access Password</label>
+          <input type="password" id="loginPass" class="login-input" placeholder="••••••••" onkeypress="if(event.key==='Enter') handleLogin()" />
+        </div>
+        
+        <button onclick="handleLogin()" class="login-btn shadow-lg shadow-red-900/20">
+          UNLOCK DASHBOARD
+        </button>
+        
+        <p class="mt-6 text-[10px] text-gray-400 uppercase tracking-widest">Confidential Information System</p>
+      </div>
+    </div>
     <!-- Matrix Loader Overlay -->
     <div id="matrixLoader" aria-live="polite" aria-busy="true">
         <canvas id="matrixCanvas" class="matrix-rain"></canvas>
@@ -3997,8 +4034,19 @@ body {
             <!-- Navigation buttons removed for refined dashboard view -->
           </div>
 
-          <div class="right-icons-group flex items-center pr-3">
-          </div></div></nav></header>
+          <div class="right-icons-group flex items-center pr-3 gap-4">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-yogi-red/10 flex items-center justify-center text-yogi-red font-bold text-xs ring-2 ring-white shadow-sm" id="userInitial">G</div>
+              <span id="engineerNameDisplay" class="text-xs font-bold text-gray-600 hidden sm:block">Guest User</span>
+            </div>
+            <button onclick="logout()" class="text-xs font-black text-gray-400 hover:text-yogi-red transition-colors uppercase tracking-tighter flex items-center gap-1">
+              <i class="fa-solid fa-power-off"></i>
+              Logout
+            </button>
+          </div>
+        </div>
+      </nav>
+    </header>
 
     <main class="px-4 sm:px-6 lg:px-8 py-6" style="margin: 0px">
       <div
@@ -5880,7 +5928,53 @@ body {
           bList.classList.add("hidden");
       });
 
-      document.addEventListener("DOMContentLoaded", init);
+      function checkAuth() {
+        if (localStorage.getItem("yd_auth") === "true") {
+          document.getElementById("login-overlay").style.display = "none";
+          return true;
+        }
+        document.getElementById("login-overlay").style.display = "flex";
+        return false;
+      }
+
+      function handleLogin() {
+        const pass = document.getElementById("loginPass").value;
+        if (pass === "Yogiji@123") {
+          localStorage.setItem("yd_auth", "true");
+          document.getElementById("login-overlay").style.opacity = "0";
+          setTimeout(() => {
+            document.getElementById("login-overlay").style.display = "none";
+            init();
+          }, 500);
+          Swal.fire({ icon: 'success', title: 'Unlocked!', timer: 1000, showConfirmButton: false });
+        } else {
+          Swal.fire({ icon: 'error', title: 'Invalid Password', text: 'Please try again', confirmButtonColor: '#a81818' });
+        }
+      }
+
+      function logout() {
+        Swal.fire({
+          title: 'Logout?',
+          text: "You will need to enter your password again.",
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Logout',
+          confirmButtonColor: '#a81818'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            localStorage.removeItem("yd_auth");
+            location.reload();
+          }
+        });
+      }
+
+      window.logout = logout; // Expose to global
+
+      document.addEventListener("DOMContentLoaded", () => {
+        if (checkAuth()) {
+          init();
+        }
+      });
 
       async function generateProjectPDF(rowId) {
         const { jsPDF } = window.jspdf;
