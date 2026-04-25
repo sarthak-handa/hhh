@@ -4036,22 +4036,16 @@ body {
               onclick="switchDataContext('forecast')"
               class="px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 bg-yogi-red text-white"
             >
-              FORECAST 26-27
+              FORECAST
             </button>
             <button
               id="toggle-sales2627"
               onclick="switchDataContext('sales2627')"
               class="px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800"
             >
-              SALES 26-27
+              REVENUE
             </button>
-            <button
-              id="toggle-actuals"
-              onclick="switchDataContext('actuals')"
-              class="px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800"
-            >
-              REVENUE 25-26
-            </button>
+            <!-- REVENUE 25-26 moved inside REVENUE context -->
           </div>
         </div>
 
@@ -4100,6 +4094,22 @@ body {
               <option value="Dispatched">Dispatched</option>
               <option value="Not Dispatched">Not Dispatched</option>
             </select>
+          </div>
+
+          <div id="revenue-year-toggle" class="flex flex-col" style="display: none;">
+            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Fiscal Year</label>
+            <div class="flex bg-gray-100 p-1 rounded-md border border-gray-200">
+              <button 
+                onclick="switchDataContext('sales2627')" 
+                id="btn-fy-curr"
+                class="px-3 py-1 text-[10px] font-bold rounded transition-colors"
+              >26-27</button>
+              <button 
+                onclick="switchDataContext('actuals')" 
+                id="btn-fy-prev"
+                class="px-3 py-1 text-[10px] font-bold rounded transition-colors"
+              >25-26</button>
+            </div>
           </div>
 
           <div class="flex flex-col relative">
@@ -4594,22 +4604,32 @@ body {
       }
 
       function syncUiWithState() {
-        // Sync context buttons
         const forBtn = document.getElementById("toggle-forecast");
         const salesBtn = document.getElementById("toggle-sales2627");
-        const actBtn = document.getElementById("toggle-actuals");
+        const yearToggle = document.getElementById("revenue-year-toggle");
         const mode = state.context;
-        const activeClass = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 bg-yogi-red dark:bg-rose-500 dark:shadow-[0_0_10px_rgba(244,63,94,0.4)] text-white";
-        const inactiveClass = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800 dark:text-gray-500 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-gray-100 dark:bg-slate-800/50";
+        
+        const activeClass = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 bg-yogi-red text-white";
+        const inactiveClass = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800";
         
         forBtn.className = mode === "forecast" ? activeClass : inactiveClass;
-        salesBtn.className = mode === "sales2627" ? activeClass : inactiveClass;
-        actBtn.className = mode === "actuals" ? activeClass : inactiveClass;
+        salesBtn.className = (mode === "sales2627" || mode === "actuals") ? activeClass : inactiveClass;
 
         if (mode === "forecast") {
           document.getElementById("dispatch-status-container").style.display = "flex";
+          yearToggle.style.display = "none";
         } else {
           document.getElementById("dispatch-status-container").style.display = "none";
+          yearToggle.style.display = "flex";
+          
+          // Update active year sub-button
+          const currBtn = document.getElementById("btn-fy-curr");
+          const prevBtn = document.getElementById("btn-fy-prev");
+          const activeSub = "bg-white text-yogi-red shadow-sm";
+          const inactiveSub = "text-gray-400 hover:text-gray-600";
+          
+          currBtn.className = `px-3 py-1 text-[10px] font-bold rounded transition-colors ${mode === "sales2627" ? activeSub : inactiveSub}`;
+          prevBtn.className = `px-3 py-1 text-[10px] font-bold rounded transition-colors ${mode === "actuals" ? activeSub : inactiveSub}`;
         }
 
         // Sync Status Dropdown
@@ -4641,52 +4661,7 @@ body {
       function switchDataContext(context) {
         if (state.context === context) return;
         state.context = context;
-
-        // --- BUTTON STYLES ---
-        const forBtn = document.getElementById("toggle-forecast");
-        const salesBtn = document.getElementById("toggle-sales2627");
-        const actBtn = document.getElementById("toggle-actuals");
-        const statusContainer = document.getElementById(
-          "dispatch-status-container",
-        );
-
-        const activeClass = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 bg-yogi-red dark:bg-rose-500 dark:shadow-[0_0_10px_rgba(244,63,94,0.4)] text-white";
-        const inactiveClass = "px-5 py-2 text-sm font-bold rounded-md transition-all duration-300 text-gray-500 hover:text-gray-800 dark:text-gray-500 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-gray-100 dark:bg-slate-800/50";
-
-        forBtn.className = context === "forecast" ? activeClass : inactiveClass;
-        salesBtn.className = context === "sales2627" ? activeClass : inactiveClass;
-        actBtn.className = context === "actuals" ? activeClass : inactiveClass;
-
-        if (context === "forecast") {
-          statusContainer.style.display = "flex";
-        } else {
-          statusContainer.style.display = "none";
-          state.filters.status = null;
-          document.getElementById("filter-status").value = "all";
-        }
-
-        // --- GRID LAYOUT ---
-        const colBar = document.getElementById("col-bar");
-        const colPie = document.getElementById("col-pie");
-        const colLine = document.getElementById("col-line");
-
-        colPie.classList.remove("xl:col-span-4", "xl:col-span-3", "md:col-span-2");
-        colLine.classList.remove("xl:col-span-4", "md:col-span-2", "xl:col-span-5");
-
-        if (context === "forecast") {
-          colPie.classList.add("xl:col-span-4");
-          colLine.classList.add("xl:col-span-4", "md:col-span-2");
-        } else {
-          colPie.classList.add("xl:col-span-3");
-          colLine.classList.add("xl:col-span-5", "md:col-span-2");
-        }
-
-        setTimeout(() => {
-          if (charts.bar) charts.bar.resize();
-          if (charts.pie) charts.pie.resize();
-          if (charts.line) charts.line.resize();
-        }, 50);
-
+        syncUiWithState();
         updateLabels(context);
         loadDashboardData();
       }
@@ -5682,9 +5657,14 @@ body {
           item.className = "flex items-center justify-between p-2 hover:bg-slate-700/30 rounded cursor-pointer group";
           item.innerHTML = `
             <span class="text-sm font-medium truncate pr-2">${b.name}</span>
-            <button onclick="deleteBookmark(${i}, event)" class="opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-500 transition-opacity">
-              <i class="fa-solid fa-trash-can text-xs"></i>
-            </button>
+            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onclick="renameBookmark(${i}, event)" class="text-sky-400 hover:text-sky-500">
+                <i class="fa-solid fa-pen-to-square text-xs"></i>
+              </button>
+              <button onclick="deleteBookmark(${i}, event)" class="text-rose-400 hover:text-rose-500">
+                <i class="fa-solid fa-trash-can text-xs"></i>
+              </button>
+            </div>
           `;
           item.onclick = (e) => {
             if (e.target.closest('button')) return;
@@ -5733,9 +5713,38 @@ body {
 
       function deleteBookmark(index, e) {
         e.stopPropagation();
-        state.bookmarks.splice(index, 1);
-        localStorage.setItem("yd_bookmarks", JSON.stringify(state.bookmarks));
-        renderBookmarks();
+        Swal.fire({
+          title: 'Delete View?',
+          text: `Are you sure you want to delete "${state.bookmarks[index].name}"?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Delete',
+          confirmButtonColor: '#f43f5e'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            state.bookmarks.splice(index, 1);
+            localStorage.setItem("yd_bookmarks", JSON.stringify(state.bookmarks));
+            renderBookmarks();
+          }
+        });
+      }
+
+      function renameBookmark(index, e) {
+        e.stopPropagation();
+        const b = state.bookmarks[index];
+        Swal.fire({
+          title: 'Rename View',
+          input: 'text',
+          inputValue: b.name,
+          showCancelButton: true,
+          confirmButtonText: 'Rename'
+        }).then((result) => {
+          if (result.isConfirmed && result.value) {
+            b.name = result.value;
+            localStorage.setItem("yd_bookmarks", JSON.stringify(state.bookmarks));
+            renderBookmarks();
+          }
+        });
       }
 
       // --- DRILLTHROUGH LOGIC ---
