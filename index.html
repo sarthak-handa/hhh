@@ -4164,8 +4164,8 @@ body {
         <div
           class="kpi-card glass-panel p-5 rounded-lg border-l-4 border-sky-400"
         >
-          <p class="text-xs font-bold text-yogi-red dark:text-sky-400/80 uppercase tracking-widest">PROJECTS</p>
-          <h3 id="kpi-projects" class="text-3xl font-bold text-gray-800 dark:text-slate-100 mt-2 tracking-tight">
+          <p class="text-xs font-bold text-yogi-red uppercase tracking-widest">PROJECTS</p>
+          <h3 id="kpi-projects" class="text-3xl font-bold text-gray-800 mt-2 tracking-tight">
             0
           </h3>
         </div>
@@ -4173,10 +4173,10 @@ body {
           class="kpi-card glass-panel p-5 rounded-lg border-l-4 border-rose-400"
           id="billingHead"
         >
-          <p class="text-xs font-bold text-rose-400/80 uppercase tracking-widest">
+          <p class="text-xs font-bold text-rose-400 uppercase tracking-widest">
             FORECASTED BILLING VALUE
           </p>
-          <h3 id="kpi-revenue" class="text-3xl font-bold text-gray-800 dark:text-slate-100 mt-2 tracking-tight">
+          <h3 id="kpi-revenue" class="text-3xl font-bold text-gray-800 mt-2 tracking-tight">
             0
           </h3>
         </div>
@@ -4184,10 +4184,10 @@ body {
           class="kpi-card glass-panel p-5 rounded-lg border-l-4 border-emerald-400"
           id="assemblyHead"
         >
-          <p class="text-xs font-bold text-emerald-400/80 uppercase tracking-widest">
+          <p class="text-xs font-bold text-emerald-400 uppercase tracking-widest">
             ASSEMBLIES TO BE DISPATCHED
           </p>
-          <h3 id="kpi-assemblies" class="text-3xl font-bold text-gray-800 dark:text-slate-100 mt-2 tracking-tight">
+          <h3 id="kpi-assemblies" class="text-3xl font-bold text-gray-800 mt-2 tracking-tight">
             0
           </h3>
         </div>
@@ -4195,10 +4195,10 @@ body {
           class="kpi-card glass-panel p-5 rounded-lg border-l-4 border-purple-400"
           id="avgMonthlyHead"
         >
-          <p class="text-xs font-bold text-purple-400/80 uppercase tracking-widest">
+          <p class="text-xs font-bold text-purple-400 uppercase tracking-widest">
             FORECASTED AVG MONTHLY
           </p>
-          <h3 id="kpi-avg" class="text-3xl font-bold text-gray-800 dark:text-slate-100 mt-2 tracking-tight">0</h3>
+          <h3 id="kpi-avg" class="text-3xl font-bold text-gray-800 mt-2 tracking-tight">0</h3>
         </div>
       </div>
       <div id="active-filters-container" class="flex gap-2 mb-4 hidden"></div>
@@ -4209,7 +4209,7 @@ body {
           id="col-bar"
         >
           <div class="flex justify-between items-center mb-2">
-            <h3 class="text-sm font-bold text-gray-800 dark:text-slate-200 tracking-wider">
+            <h3 class="text-sm font-bold text-gray-800 tracking-wider">
               FORECASTED BILLING ALLOCATION
             </h3>
           </div>
@@ -4810,9 +4810,33 @@ body {
           (d) => d.assembly && d.assembly.trim() !== "",
         ).length;
 
-        // Average monthly: divide by 12 if no months selected, else by selected month count
+        // Average monthly calculation:
+        // 1. If specific months are filtered, use that count.
+        // 2. If full year is shown (default), use elapsed fiscal months if current FY, else 12.
         const selectedMonthCount = state.filters.month.length;
-        const divisor = selectedMonthCount > 0 ? selectedMonthCount : 12;
+        let divisor = 12;
+
+        if (selectedMonthCount > 0) {
+          divisor = selectedMonthCount;
+        } else {
+          const now = new Date();
+          // Determine FY start year based on context
+          // forecast/sales2627 -> 2026
+          // actuals -> 2025
+          const fyStartYear = (state.context === "actuals") ? 2025 : 2026;
+          const fyStart = new Date(fyStartYear, 3, 1); // April 1st
+          const fyEnd = new Date(fyStartYear + 1, 2, 31); // March 31st
+
+          if (now < fyStart) {
+            divisor = 1; // Not started yet, show 1st month
+          } else if (now > fyEnd) {
+            divisor = 12; // Finished FY
+          } else {
+            // Within FY: count months from April
+            divisor = (now.getFullYear() - fyStartYear) * 12 + (now.getMonth() - 3) + 1;
+            divisor = Math.max(1, Math.min(12, divisor));
+          }
+        }
 
         document.getElementById("kpi-projects").innerText = totalProj;
         document.getElementById("kpi-revenue").innerText =
