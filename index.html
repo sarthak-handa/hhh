@@ -4705,7 +4705,7 @@ body {
           if (assemblyHead)
             assemblyHead.innerText = "ASSEMBLIES TO BE DISPATCHED";
           if (avgMonthlyHead)
-            avgMonthlyHead.innerText = "AVERAGE MONTHLY FORECAST";
+            avgMonthlyHead.innerText = "AVG MONTHLY TARGET";
 
           if (barTitle) barTitle.innerText = "FORECASTED BILLING ALLOCATION";
           if (pieTitle)
@@ -4715,7 +4715,7 @@ body {
           if (billingHead) billingHead.innerText = "ACTUAL BILLING VALUE";
           if (assemblyHead) assemblyHead.innerText = "ASSEMBLIES DISPATCHED";
           if (avgMonthlyHead)
-            avgMonthlyHead.innerText = "AVERAGE MONTHLY BILLING";
+            avgMonthlyHead.innerText = "AVG MONTHLY REVENUE (YTD)";
 
           if (barTitle) barTitle.innerText = "REVENUE BY PROJECT MANAGER";
           if (pieTitle)
@@ -4812,30 +4812,31 @@ body {
 
         // Average monthly calculation:
         // 1. If specific months are filtered, use that count.
-        // 2. If full year is shown (default), use elapsed fiscal months if current FY, else 12.
+        // 2. If full year is shown (default):
+        //    - Forecast/Sales: Always use 12 (planning target).
+        //    - Actuals: Use elapsed fiscal months (YTD indicator).
         const selectedMonthCount = state.filters.month.length;
         let divisor = 12;
 
         if (selectedMonthCount > 0) {
           divisor = selectedMonthCount;
-        } else {
+        } else if (state.context === "actuals") {
           const now = new Date();
-          // Determine FY start year based on context
-          // forecast/sales2627 -> 2026
-          // actuals -> 2025
-          const fyStartYear = (state.context === "actuals") ? 2025 : 2026;
-          const fyStart = new Date(fyStartYear, 3, 1); // April 1st
-          const fyEnd = new Date(fyStartYear + 1, 2, 31); // March 31st
+          const fyStartYear = 2025;
+          const fyStart = new Date(fyStartYear, 3, 1);
+          const fyEnd = new Date(fyStartYear + 1, 2, 31);
 
           if (now < fyStart) {
-            divisor = 1; // Not started yet, show 1st month
+            divisor = 1;
           } else if (now > fyEnd) {
-            divisor = 12; // Finished FY
+            divisor = 12;
           } else {
-            // Within FY: count months from April
             divisor = (now.getFullYear() - fyStartYear) * 12 + (now.getMonth() - 3) + 1;
             divisor = Math.max(1, Math.min(12, divisor));
           }
+        } else {
+          // Forecast/Sales context defaults to 12
+          divisor = 12;
         }
 
         document.getElementById("kpi-projects").innerText = totalProj;
