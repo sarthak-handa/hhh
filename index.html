@@ -5654,15 +5654,15 @@ body {
 
         state.bookmarks.forEach((b, i) => {
           const item = document.createElement("div");
-          item.className = "flex items-center justify-between p-2 hover:bg-slate-700/30 rounded cursor-pointer group";
+          item.className = "flex items-center justify-between p-2 hover:bg-slate-700/10 rounded cursor-pointer group border-b border-gray-100 last:border-0";
           item.innerHTML = `
-            <span class="text-sm font-medium truncate pr-2">${b.name}</span>
-            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onclick="renameBookmark(${i}, event)" class="text-sky-400 hover:text-sky-500">
-                <i class="fa-solid fa-pen-to-square text-xs"></i>
+            <span class="text-sm font-medium truncate pr-2 text-gray-700">${b.name}</span>
+            <div class="flex gap-3 items-center">
+              <button onclick="renameBookmark(${i}, event)" title="Rename View" class="text-gray-400 hover:text-sky-500 transition-colors">
+                <i class="fa-solid fa-pen-to-square text-sm"></i>
               </button>
-              <button onclick="deleteBookmark(${i}, event)" class="text-rose-400 hover:text-rose-500">
-                <i class="fa-solid fa-trash-can text-xs"></i>
+              <button onclick="deleteBookmark(${i}, event)" title="Delete View" class="text-gray-400 hover:text-rose-500 transition-colors">
+                <i class="fa-solid fa-trash-can text-sm"></i>
               </button>
             </div>
           `;
@@ -6241,7 +6241,7 @@ body {
           const increment = progress < 82 ? 6 + Math.random() * 10 : 1 + Math.random() * 3;
           progress = Math.min(progress + increment, 96);
           setMatrixProgress(progress);
-        }, 120);
+        }, 60);
       }
 
       function startMatrix() {
@@ -6259,7 +6259,7 @@ body {
           drawMatrix();
           matrixInterval = window.setInterval(drawMatrix, 40);
           startMatrixProgress();
-        }, 120);
+        }, 10);
       }
 
       function stopMatrix(immediate = false) {
@@ -6287,7 +6287,7 @@ body {
           matrixLoader.classList.remove("is-active");
           matrixVisible = false;
           setMatrixProgress(0);
-        }, 70);
+        }, 20);
       }
 
       window.addEventListener("resize", () => {
